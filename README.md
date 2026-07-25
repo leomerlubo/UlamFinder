@@ -37,4 +37,4 @@ Dish documents are stored in the `dishes` collection. Each document contains:
 * `createdAt`
 * `updatedAt`
 
-Public visitors can browse dishes. Editing is restricted to the approved Google accounts listed in `src/firebase.js` and `firestore.rules`.
+Public visitors can browse dishes. Configure the approved editor accounts privately in the Firebase console. The repository rules deny writes until that private rule is published.
