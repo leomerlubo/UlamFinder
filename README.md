@@ -6,7 +6,7 @@ Vercel frontend with Firebase Authentication and Cloud Firestore.
 
 1. Create a Firebase web app.
 2. Create a Cloud Firestore database.
-3. Enable Anonymous authentication in Firebase Authentication.
+3. Enable Google authentication in Firebase Authentication.
 4. Deploy `firestore.rules` with the Firebase CLI.
 5. Copy `.env.example` to `.env.local` and enter the Firebase web app values.
 
@@ -37,3 +37,4 @@ Dish documents are stored in the `dishes` collection. Each document contains:
 * `createdAt`
 * `updatedAt`
 
+Public visitors can browse dishes. Editing is restricted to the approved Google accounts listed in `src/firebase.js` and `firestore.rules`.
