@@ -1,0 +1,3122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Pinoy Ulam Finder</title>
+
+  <style>
+    :root {
+      --primary: #9a3412;
+      --primary-dark: #7c2d12;
+      --primary-light: #ffedd5;
+      --accent: #f59e0b;
+      --background: #fffaf5;
+      --surface: #ffffff;
+      --text: #292524;
+      --muted: #78716c;
+      --border: #e7e5e4;
+      --danger: #b91c1c;
+
+      --shadow:
+        0 12px 30px
+        rgba(120, 53, 15, 0.10);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+      background: var(--background);
+      color: var(--text);
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .hero {
+      padding:
+        40px 20px
+        34px;
+
+      color: white;
+
+      background:
+        radial-gradient(
+          circle at top right,
+          rgba(245, 158, 11, 0.28),
+          transparent 36%
+        ),
+        linear-gradient(
+          135deg,
+          #7c2d12,
+          #9a3412 58%,
+          #c2410c
+        );
+    }
+
+    .hero-inner {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+    }
+
+    .hero-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 24px;
+
+      margin-bottom: 26px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+
+      padding: 7px 12px;
+
+      border-radius: 999px;
+
+      background:
+        rgba(255, 255, 255, 0.14);
+
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 12px 0 0;
+
+      font-size:
+        clamp(36px, 5vw, 58px);
+
+      line-height: 1;
+    }
+
+    .add-dish-button {
+      flex: 0 0 auto;
+
+      padding: 13px 19px;
+
+      border: 0;
+      border-radius: 12px;
+
+      background: white;
+      color: var(--primary-dark);
+
+      font-weight: 700;
+
+      box-shadow:
+        0 8px 22px
+        rgba(0, 0, 0, 0.15);
+    }
+
+    .search-container {
+      position: relative;
+      max-width: 860px;
+    }
+
+    .search-input {
+      width: 100%;
+      min-height: 58px;
+
+      padding:
+        0 54px
+        0 18px;
+
+      border: 0;
+      border-radius: 16px;
+
+      outline: none;
+
+      background: white;
+
+      font-size: 16px;
+
+      box-shadow:
+        0 14px 28px
+        rgba(0, 0, 0, 0.18);
+    }
+
+    .clear-search-button {
+      position: absolute;
+      top: 50%;
+      right: 13px;
+
+      display: none;
+
+      width: 34px;
+      height: 34px;
+
+      transform: translateY(-50%);
+
+      border: 0;
+      border-radius: 50%;
+
+      background: #f5f5f4;
+      color: var(--muted);
+
+      font-size: 20px;
+    }
+
+    .autocomplete {
+      position: absolute;
+      z-index: 50;
+
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+
+      display: none;
+
+      max-height: 280px;
+      overflow-y: auto;
+
+      border-radius: 14px;
+
+      background: white;
+      color: var(--text);
+
+      box-shadow: var(--shadow);
+    }
+
+    .autocomplete-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+
+      width: 100%;
+
+      padding: 13px 16px;
+
+      border: 0;
+      border-bottom:
+        1px solid var(--border);
+
+      background: white;
+
+      text-align: left;
+    }
+
+    .autocomplete-item:hover,
+    .autocomplete-item.active {
+      background: var(--primary-light);
+    }
+
+    .autocomplete-type {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    main {
+      width:
+        min(1180px, calc(100% - 32px));
+
+      margin: 0 auto;
+
+      padding:
+        28px 0
+        56px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .total-count,
+    .result-summary {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .category-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(6, minmax(120px, 1fr));
+
+      gap: 12px;
+
+      margin-bottom: 30px;
+    }
+
+    .category-card {
+      min-height: 110px;
+
+      padding: 15px 10px;
+
+      border:
+        1px solid var(--border);
+
+      border-radius: 16px;
+
+      background: var(--surface);
+      color: var(--text);
+
+      text-align: center;
+
+      box-shadow:
+        0 6px 18px
+        rgba(120, 53, 15, 0.05);
+
+      transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
+    }
+
+    .category-card:hover,
+    .category-card.active {
+      transform: translateY(-2px);
+
+      border-color: var(--accent);
+
+      background: #fff7ed;
+    }
+
+    .category-icon {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 28px;
+    }
+
+    .category-name {
+      display: block;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .category-count {
+      display: block;
+      margin-top: 5px;
+
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .results-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+
+      margin-bottom: 17px;
+    }
+
+    .reset-button {
+      padding: 9px 13px;
+
+      border:
+        1px solid var(--border);
+
+      border-radius: 10px;
+
+      background: white;
+      color: var(--primary-dark);
+
+      font-weight: 700;
+    }
+
+    .dish-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+      gap: 16px;
+    }
+
+    .dish-card {
+      display: flex;
+      flex-direction: column;
+
+      min-height: 165px;
+
+      padding: 18px;
+
+      border:
+        1px solid var(--border);
+
+      border-radius: 18px;
+
+      background: var(--surface);
+
+      box-shadow:
+        0 8px 24px
+        rgba(120, 53, 15, 0.06);
+    }
+
+    .dish-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .dish-name-highlight {
+      flex: 1;
+
+      margin: 0;
+
+      padding:
+        11px 13px;
+
+      border-left:
+        4px solid var(--accent);
+
+      border-radius: 10px;
+
+      background: #fff7ed;
+
+      color: #1c1917;
+
+      font-size: 20px;
+      line-height: 1.3;
+    }
+
+    .category-badges {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 5px;
+    }
+
+    .category-badge {
+      padding: 6px 9px;
+
+      border-radius: 999px;
+
+      background: var(--primary-light);
+      color: var(--primary-dark);
+
+      font-size: 11px;
+      font-weight: 700;
+
+      white-space: nowrap;
+    }
+
+    .card-actions {
+      display: grid;
+
+      grid-template-columns:
+        1.5fr 1fr 1fr;
+
+      gap: 8px;
+
+      margin-top: auto;
+      padding-top: 18px;
+    }
+
+    .card-actions button {
+      padding: 10px 9px;
+
+      border-radius: 10px;
+
+      font-weight: 700;
+    }
+
+    .view-button {
+      border: 0;
+
+      background: var(--primary);
+      color: white;
+    }
+
+    .edit-button {
+      border:
+        1px solid var(--border);
+
+      background: white;
+      color: var(--primary-dark);
+    }
+
+    .delete-button {
+      border:
+        1px solid #fecaca;
+
+      background: #fff1f2;
+      color: var(--danger);
+    }
+
+    .loading-state,
+    .empty-state {
+      padding: 58px 24px;
+
+      border-radius: 18px;
+
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .empty-state {
+      display: none;
+
+      border:
+        1px dashed #d6d3d1;
+
+      background: white;
+    }
+
+    .empty-title {
+      margin: 0 0 8px;
+      color: var(--text);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      z-index: 100;
+
+      inset: 0;
+
+      display: none;
+      align-items: center;
+      justify-content: center;
+
+      padding: 20px;
+
+      background:
+        rgba(41, 37, 36, 0.65);
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      width: min(800px, 100%);
+      max-height: calc(100vh - 40px);
+
+      overflow-y: auto;
+
+      border-radius: 20px;
+
+      background: white;
+
+      box-shadow:
+        0 24px 60px
+        rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-header {
+      position: sticky;
+      z-index: 10;
+      top: 0;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+
+      padding: 20px 22px;
+
+      border-bottom:
+        1px solid var(--border);
+
+      background: white;
+    }
+
+    .modal-title {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .close-modal-button {
+      width: 38px;
+      height: 38px;
+
+      border: 0;
+      border-radius: 50%;
+
+      background: #f5f5f4;
+      color: var(--text);
+
+      font-size: 21px;
+    }
+
+    .dish-form {
+      padding: 22px;
+    }
+
+    .form-grid {
+      display: grid;
+
+      grid-template-columns:
+        1fr 1fr;
+
+      gap: 18px;
+    }
+
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-field.full {
+      grid-column: 1 / -1;
+    }
+
+    .form-label {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .required {
+      color: var(--danger);
+    }
+
+    .text-input,
+    .text-area {
+      width: 100%;
+
+      padding: 12px 13px;
+
+      border:
+        1px solid var(--border);
+
+      border-radius: 11px;
+
+      outline: none;
+
+      background: white;
+    }
+
+    .text-input:focus,
+    .text-area:focus {
+      border-color: var(--accent);
+
+      box-shadow:
+        0 0 0 3px
+        rgba(245, 158, 11, 0.16);
+    }
+
+    .text-area {
+      min-height: 105px;
+      resize: vertical;
+    }
+
+    .text-area.large {
+      min-height: 150px;
+    }
+
+    .field-help {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .category-checkbox-grid {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+      gap: 10px;
+    }
+
+    .category-checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+
+      min-height: 45px;
+
+      padding: 10px 12px;
+
+      border:
+        1px solid var(--border);
+
+      border-radius: 11px;
+
+      background: white;
+
+      cursor: pointer;
+    }
+
+    .category-checkbox-label:hover {
+      border-color: var(--accent);
+      background: #fff7ed;
+    }
+
+    .category-checkbox-label.selected {
+      border-color: var(--accent);
+
+      background: var(--primary-light);
+      color: var(--primary-dark);
+
+      font-weight: 700;
+    }
+
+    .category-checkbox-label input {
+      width: 17px;
+      height: 17px;
+
+      accent-color: var(--primary);
+    }
+
+    .tag-editor {
+      position: relative;
+
+      min-height: 49px;
+
+      padding: 8px;
+
+      border:
+        1px solid var(--border);
+
+      border-radius: 11px;
+
+      background: white;
+    }
+
+    .tag-editor:focus-within {
+      border-color: var(--accent);
+
+      box-shadow:
+        0 0 0 3px
+        rgba(245, 158, 11, 0.16);
+    }
+
+    .tag-editor-content {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .tag-editor-input {
+      flex: 1 1 170px;
+
+      min-width: 130px;
+
+      padding: 6px 4px;
+
+      border: 0;
+      outline: none;
+
+      background: transparent;
+    }
+
+    .editable-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+
+      padding: 6px 9px;
+
+      border-radius: 999px;
+
+      background: var(--primary-light);
+      color: var(--primary-dark);
+
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .remove-tag-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      width: 18px;
+      height: 18px;
+
+      padding: 0;
+
+      border: 0;
+      border-radius: 50%;
+
+      background:
+        rgba(124, 45, 18, 0.13);
+
+      color: var(--primary-dark);
+    }
+
+    .tag-suggestions {
+      position: absolute;
+      z-index: 30;
+
+      top: calc(100% + 7px);
+      left: 0;
+      right: 0;
+
+      display: none;
+
+      max-height: 220px;
+      overflow-y: auto;
+
+      border:
+        1px solid var(--border);
+
+      border-radius: 11px;
+
+      background: white;
+
+      box-shadow: var(--shadow);
+    }
+
+    .tag-suggestion-button {
+      display: block;
+
+      width: 100%;
+
+      padding: 11px 12px;
+
+      border: 0;
+      border-bottom:
+        1px solid var(--border);
+
+      background: white;
+
+      text-align: left;
+    }
+
+    .tag-suggestion-button:hover {
+      background: var(--primary-light);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+
+      margin-top: 23px;
+      padding-top: 19px;
+
+      border-top:
+        1px solid var(--border);
+    }
+
+    .cancel-button,
+    .save-button {
+      padding: 11px 18px;
+
+      border-radius: 11px;
+
+      font-weight: 700;
+    }
+
+    .cancel-button {
+      border:
+        1px solid var(--border);
+
+      background: white;
+      color: var(--text);
+    }
+
+    .save-button {
+      border: 0;
+
+      background: var(--primary);
+      color: white;
+    }
+
+    .details-content {
+      padding: 22px;
+    }
+
+    .details-dish-name {
+      margin: 0 0 14px;
+
+      color: var(--primary-dark);
+
+      font-size:
+        clamp(28px, 5vw, 40px);
+    }
+
+    .details-categories {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+
+      margin-bottom: 22px;
+    }
+
+    .details-section {
+      padding: 17px 0;
+
+      border-top:
+        1px solid var(--border);
+    }
+
+    .details-section:first-of-type {
+      border-top: 0;
+    }
+
+    .details-heading {
+      margin: 0 0 10px;
+
+      color: var(--primary-dark);
+
+      font-size: 14px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .details-text {
+      margin: 0;
+
+      color: #44403c;
+
+      line-height: 1.7;
+      white-space: pre-wrap;
+    }
+
+    .details-tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .details-tag {
+      padding: 7px 10px;
+
+      border-radius: 999px;
+
+      background: #f5f5f4;
+      color: #44403c;
+
+      font-size: 13px;
+    }
+
+    .details-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+
+      padding:
+        0 22px
+        22px;
+    }
+
+    .details-footer button {
+      padding: 10px 16px;
+
+      border-radius: 10px;
+
+      font-weight: 700;
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 200;
+
+      right: 22px;
+      bottom: 22px;
+
+      display: none;
+
+      max-width: 370px;
+
+      padding: 14px 16px;
+
+      border-radius: 12px;
+
+      background: #292524;
+      color: white;
+
+      box-shadow: var(--shadow);
+    }
+
+    .toast.show {
+      display: block;
+    }
+
+    .toast.error {
+      background: var(--danger);
+    }
+
+    @media (max-width: 1000px) {
+      .category-grid {
+        grid-template-columns:
+          repeat(3, 1fr);
+      }
+
+      .dish-grid {
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 700px) {
+      .hero-header {
+        flex-direction: column;
+      }
+
+      .add-dish-button {
+        width: 100%;
+      }
+
+      .category-grid,
+      .dish-grid,
+      .form-grid,
+      .category-checkbox-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-field.full {
+        grid-column: auto;
+      }
+
+      .results-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .dish-card-header {
+        flex-direction: column;
+      }
+
+      .category-badges {
+        justify-content: flex-start;
+      }
+
+      .card-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .modal-actions,
+      .details-footer {
+        flex-direction: column-reverse;
+      }
+
+      .modal-actions button,
+      .details-footer button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <section class="hero">
+    <div class="hero-inner">
+
+      <div class="hero-header">
+        <div>
+          <span class="eyebrow">
+            Google Sheets Powered
+          </span>
+
+          <h1>
+            Pinoy Ulam Finder
+          </h1>
+        </div>
+
+        <button
+          class="add-dish-button"
+          type="button"
+          onclick="openDishModal()"
+        >
+          + Add Dish
+        </button>
+      </div>
+
+      <div class="search-container">
+
+        <input
+          id="searchInput"
+          class="search-input"
+          type="text"
+          autocomplete="off"
+          placeholder="Search dish or ingredient..."
+        >
+
+        <button
+          id="clearSearchButton"
+          class="clear-search-button"
+          type="button"
+        >
+          ×
+        </button>
+
+        <div
+          id="searchAutocomplete"
+          class="autocomplete"
+        ></div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <main>
+
+    <section>
+
+      <div class="section-header">
+
+        <h2 class="section-title">
+          Main Categories
+        </h2>
+
+        <span
+          id="totalDishCount"
+          class="total-count"
+        ></span>
+
+      </div>
+
+      <div
+        id="categoryGrid"
+        class="category-grid"
+      ></div>
+
+    </section>
+
+
+    <section>
+
+      <div class="results-toolbar">
+
+        <div
+          id="resultSummary"
+          class="result-summary"
+        >
+          Showing all dishes
+        </div>
+
+        <button
+          id="resetFiltersButton"
+          class="reset-button"
+          type="button"
+        >
+          Reset Filters
+        </button>
+
+      </div>
+
+
+      <div
+        id="loadingState"
+        class="loading-state"
+      >
+        Loading dishes...
+      </div>
+
+
+      <div
+        id="dishGrid"
+        class="dish-grid"
+      ></div>
+
+
+      <div
+        id="emptyState"
+        class="empty-state"
+      >
+        <h3 class="empty-title">
+          No matching dishes found
+        </h3>
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <div
+    id="dishModalBackdrop"
+    class="modal-backdrop"
+  >
+
+    <div class="modal">
+
+      <div class="modal-header">
+
+        <h2
+          id="modalTitle"
+          class="modal-title"
+        >
+          Add Dish
+        </h2>
+
+        <button
+          class="close-modal-button"
+          type="button"
+          onclick="closeDishModal()"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <form
+        id="dishForm"
+        class="dish-form"
+      >
+
+        <input
+          id="dishId"
+          type="hidden"
+        >
+
+
+        <div class="form-grid">
+
+          <div class="form-field full">
+
+            <label
+              class="form-label"
+              for="dishName"
+            >
+              Dish Name
+              <span class="required">*</span>
+            </label>
+
+            <input
+              id="dishName"
+              class="text-input"
+              type="text"
+              required
+            >
+
+          </div>
+
+
+          <div class="form-field full">
+
+            <label class="form-label">
+              Main Categories
+              <span class="required">*</span>
+            </label>
+
+            <div
+              id="categoryCheckboxGrid"
+              class="category-checkbox-grid"
+            ></div>
+
+          </div>
+
+
+          <div class="form-field full">
+
+            <label class="form-label">
+              Main Ingredients
+              <span class="required">*</span>
+            </label>
+
+            <div
+              id="mainIngredientEditor"
+              class="tag-editor"
+            >
+
+              <div class="tag-editor-content">
+
+                <input
+                  class="tag-editor-input"
+                  type="text"
+                  autocomplete="off"
+                  placeholder="Type an ingredient, then press comma or Enter"
+                >
+
+              </div>
+
+              <div class="tag-suggestions"></div>
+
+            </div>
+
+          </div>
+
+
+          <div class="form-field full">
+
+            <label class="form-label">
+              Sub Ingredients
+            </label>
+
+            <div
+              id="subIngredientEditor"
+              class="tag-editor"
+            >
+
+              <div class="tag-editor-content">
+
+                <input
+                  class="tag-editor-input"
+                  type="text"
+                  autocomplete="off"
+                  placeholder="Type an ingredient, then press comma or Enter"
+                >
+
+              </div>
+
+              <div class="tag-suggestions"></div>
+
+            </div>
+
+          </div>
+
+
+          <div class="form-field full">
+
+            <label
+              class="form-label"
+              for="description"
+            >
+              Description
+            </label>
+
+            <textarea
+              id="description"
+              class="text-area"
+            ></textarea>
+
+          </div>
+
+
+          <div class="form-field full">
+
+            <label
+              class="form-label"
+              for="recipeGuideline"
+            >
+              Recipe Guideline
+            </label>
+
+            <textarea
+              id="recipeGuideline"
+              class="text-area large"
+              placeholder="Add preparation notes, measurements, serving information, or recipe guidance"
+            ></textarea>
+
+          </div>
+
+
+          <div class="form-field full">
+
+            <label
+              class="form-label"
+              for="cookingInstructions"
+            >
+              Cooking Instructions
+            </label>
+
+            <textarea
+              id="cookingInstructions"
+              class="text-area large"
+              placeholder="Enter the steps for cooking the dish"
+            ></textarea>
+
+          </div>
+
+        </div>
+
+
+        <div class="modal-actions">
+
+          <button
+            class="cancel-button"
+            type="button"
+            onclick="closeDishModal()"
+          >
+            Cancel
+          </button>
+
+          <button
+            id="saveDishButton"
+            class="save-button"
+            type="submit"
+          >
+            Save Dish
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+
+  <div
+    id="detailsModalBackdrop"
+    class="modal-backdrop"
+  >
+
+    <div class="modal">
+
+      <div class="modal-header">
+
+        <h2 class="modal-title">
+          Dish Details
+        </h2>
+
+        <button
+          class="close-modal-button"
+          type="button"
+          onclick="closeDetailsModal()"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div
+        id="detailsContent"
+        class="details-content"
+      ></div>
+
+
+      <div class="details-footer">
+
+        <button
+          class="cancel-button"
+          type="button"
+          onclick="closeDetailsModal()"
+        >
+          Close
+        </button>
+
+        <button
+          id="detailsEditButton"
+          class="save-button"
+          type="button"
+        >
+          Edit Dish
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div
+    id="toast"
+    class="toast"
+  ></div>
+
+
+  <script type="module" src="/src/firebase.js"></script>
+
+  <script>
+    const appState = {
+      categories: [],
+      dishes: [],
+      ingredientSuggestions: [],
+      activeCategories: [],
+      searchTerm: '',
+      autocompleteIndex: -1,
+      selectedDish: null
+    };
+
+
+    const categoryIcons = {
+      Pork: '🐖',
+      Chicken: '🍗',
+      Beef: '🥩',
+      'Fish & Seafood': '🐟',
+      Vegetable: '🥬',
+      'Non Rice Based': '🍝'
+    };
+
+
+    let mainIngredientEditor;
+    let subIngredientEditor;
+
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      initializeApp
+    );
+
+
+    function initializeApp() {
+      bindPageEvents();
+      loadAppData();
+    }
+
+
+    function bindPageEvents() {
+      const searchInput =
+        document.getElementById(
+          'searchInput'
+        );
+
+      searchInput.addEventListener(
+        'input',
+        handleSearchInput
+      );
+
+      searchInput.addEventListener(
+        'keydown',
+        handleSearchKeyboard
+      );
+
+
+      document
+        .getElementById(
+          'clearSearchButton'
+        )
+        .addEventListener(
+          'click',
+          clearSearch
+        );
+
+
+      document
+        .getElementById(
+          'resetFiltersButton'
+        )
+        .addEventListener(
+          'click',
+          resetFilters
+        );
+
+
+      document
+        .getElementById(
+          'dishForm'
+        )
+        .addEventListener(
+          'submit',
+          submitDishForm
+        );
+
+
+      document
+        .getElementById(
+          'detailsEditButton'
+        )
+        .addEventListener(
+          'click',
+          () => {
+            const dish =
+              appState.selectedDish;
+
+            closeDetailsModal();
+
+            if (dish) {
+              openDishModal(dish);
+            }
+          }
+        );
+
+
+      document
+        .getElementById(
+          'dishModalBackdrop'
+        )
+        .addEventListener(
+          'click',
+          event => {
+            if (
+              event.target.id ===
+              'dishModalBackdrop'
+            ) {
+              closeDishModal();
+            }
+          }
+        );
+
+
+      document
+        .getElementById(
+          'detailsModalBackdrop'
+        )
+        .addEventListener(
+          'click',
+          event => {
+            if (
+              event.target.id ===
+              'detailsModalBackdrop'
+            ) {
+              closeDetailsModal();
+            }
+          }
+        );
+
+
+      document.addEventListener(
+        'click',
+        event => {
+          if (
+            !event.target.closest(
+              '.search-container'
+            )
+          ) {
+            hideSearchAutocomplete();
+          }
+        }
+      );
+    }
+
+
+    async function loadAppData() {
+      document
+        .getElementById(
+          'loadingState'
+        )
+        .style.display = 'block';
+
+      try {
+        const data =
+          await window.ulamApi.getAppData();
+
+          appState.categories =
+            data.categories || [];
+
+          appState.dishes =
+            data.dishes || [];
+
+          appState.ingredientSuggestions =
+            data.ingredientSuggestions || [];
+
+          renderCategoryCheckboxes();
+          initializeTagEditors();
+          renderCategoryCards();
+          renderDishes();
+
+          document
+            .getElementById(
+              'loadingState'
+            )
+            .style.display = 'none';
+      } catch (error) {
+        handleServerError(error);
+      }
+    }
+
+
+    function initializeTagEditors() {
+      if (!mainIngredientEditor) {
+        mainIngredientEditor =
+          new TagEditor(
+            document.getElementById(
+              'mainIngredientEditor'
+            ),
+            () =>
+              appState
+                .ingredientSuggestions
+          );
+      }
+
+      if (!subIngredientEditor) {
+        subIngredientEditor =
+          new TagEditor(
+            document.getElementById(
+              'subIngredientEditor'
+            ),
+            () =>
+              appState
+                .ingredientSuggestions
+          );
+      }
+    }
+
+
+    function renderCategoryCheckboxes() {
+      const container =
+        document.getElementById(
+          'categoryCheckboxGrid'
+        );
+
+      container.innerHTML = '';
+
+      appState.categories.forEach(
+        category => {
+          const label =
+            document.createElement(
+              'label'
+            );
+
+          label.className =
+            'category-checkbox-label';
+
+          const checkbox =
+            document.createElement(
+              'input'
+            );
+
+          checkbox.type = 'checkbox';
+          checkbox.value = category;
+          checkbox.name = 'mainCategory';
+
+          const text =
+            document.createElement(
+              'span'
+            );
+
+          text.textContent =
+            `${
+              categoryIcons[category] || '🍲'
+            } ${category}`;
+
+          checkbox.addEventListener(
+            'change',
+            () => {
+              label.classList.toggle(
+                'selected',
+                checkbox.checked
+              );
+            }
+          );
+
+          label.appendChild(checkbox);
+          label.appendChild(text);
+
+          container.appendChild(label);
+        }
+      );
+    }
+
+
+    function renderCategoryCards() {
+      const container =
+        document.getElementById(
+          'categoryGrid'
+        );
+
+      container.innerHTML = '';
+
+      appState.categories.forEach(
+        category => {
+          const count =
+            appState.dishes.filter(
+              dish =>
+                dish.mainCategories.includes(
+                  category
+                )
+            ).length;
+
+          const isActive =
+            appState.activeCategories.includes(
+              category
+            );
+
+          const button =
+            document.createElement(
+              'button'
+            );
+
+          button.type = 'button';
+
+          button.className =
+            `category-card${
+              isActive ? ' active' : ''
+            }`;
+
+          button.innerHTML = `
+            <span class="category-icon">
+              ${
+                categoryIcons[category] ||
+                '🍲'
+              }
+            </span>
+
+            <span class="category-name">
+              ${escapeHtml(category)}
+            </span>
+
+            <span class="category-count">
+              ${count}
+              ${count === 1 ? 'dish' : 'dishes'}
+            </span>
+          `;
+
+          button.addEventListener(
+            'click',
+            () =>
+              toggleCategoryFilter(
+                category
+              )
+          );
+
+          container.appendChild(button);
+        }
+      );
+
+      const total =
+        appState.dishes.length;
+
+      document
+        .getElementById(
+          'totalDishCount'
+        )
+        .textContent =
+          `${total} total ${
+            total === 1
+              ? 'dish'
+              : 'dishes'
+          }`;
+    }
+
+
+    function toggleCategoryFilter(category) {
+      const index =
+        appState
+          .activeCategories
+          .indexOf(category);
+
+      if (index >= 0) {
+        appState
+          .activeCategories
+          .splice(index, 1);
+      } else {
+        appState
+          .activeCategories
+          .push(category);
+      }
+
+      renderCategoryCards();
+      renderDishes();
+    }
+
+
+    function handleSearchInput(event) {
+      appState.searchTerm =
+        event.target.value.trim();
+
+      appState.autocompleteIndex = -1;
+
+      document
+        .getElementById(
+          'clearSearchButton'
+        )
+        .style.display =
+          appState.searchTerm
+            ? 'block'
+            : 'none';
+
+      renderSearchAutocomplete();
+      renderDishes();
+    }
+
+
+    function clearSearch() {
+      const input =
+        document.getElementById(
+          'searchInput'
+        );
+
+      input.value = '';
+
+      appState.searchTerm = '';
+
+      document
+        .getElementById(
+          'clearSearchButton'
+        )
+        .style.display = 'none';
+
+      hideSearchAutocomplete();
+      renderDishes();
+
+      input.focus();
+    }
+
+
+    function resetFilters() {
+      appState.activeCategories = [];
+      appState.searchTerm = '';
+
+      const input =
+        document.getElementById(
+          'searchInput'
+        );
+
+      input.value = '';
+
+      document
+        .getElementById(
+          'clearSearchButton'
+        )
+        .style.display = 'none';
+
+      hideSearchAutocomplete();
+      renderCategoryCards();
+      renderDishes();
+    }
+
+
+    function getFilteredDishes() {
+      const normalizedSearch =
+        normalizeText(
+          appState.searchTerm
+        );
+
+      return appState.dishes.filter(
+        dish => {
+          const categoryMatches =
+            !appState
+              .activeCategories
+              .length ||
+            appState
+              .activeCategories
+              .some(category =>
+                dish
+                  .mainCategories
+                  .includes(category)
+              );
+
+          if (!categoryMatches) {
+            return false;
+          }
+
+          if (!normalizedSearch) {
+            return true;
+          }
+
+          const searchableContent = [
+            dish.dishName,
+            ...dish.mainCategories,
+            ...dish.mainIngredients,
+            ...dish.subIngredients,
+            dish.description,
+            dish.recipeGuideline,
+            dish.cookingInstructions
+          ].join(' ');
+
+          return normalizeText(
+            searchableContent
+          ).includes(
+            normalizedSearch
+          );
+        }
+      );
+    }
+
+
+    function renderDishes() {
+      const grid =
+        document.getElementById(
+          'dishGrid'
+        );
+
+      const emptyState =
+        document.getElementById(
+          'emptyState'
+        );
+
+      const dishes =
+        getFilteredDishes();
+
+      grid.innerHTML = '';
+
+      dishes.forEach(dish => {
+        grid.appendChild(
+          createDishCard(dish)
+        );
+      });
+
+      emptyState.style.display =
+        dishes.length
+          ? 'none'
+          : 'block';
+
+      updateResultSummary(
+        dishes.length
+      );
+    }
+
+
+    function createDishCard(dish) {
+      const card =
+        document.createElement(
+          'article'
+        );
+
+      card.className = 'dish-card';
+
+      const categoryBadges =
+        dish.mainCategories
+          .map(category => `
+            <span class="category-badge">
+              ${escapeHtml(category)}
+            </span>
+          `)
+          .join('');
+
+      card.innerHTML = `
+        <div class="dish-card-header">
+
+          <h3 class="dish-name-highlight">
+            ${escapeHtml(dish.dishName)}
+          </h3>
+
+          <div class="category-badges">
+            ${categoryBadges}
+          </div>
+
+        </div>
+
+
+        <div class="card-actions">
+
+          <button
+            class="view-button"
+            type="button"
+          >
+            View Details
+          </button>
+
+          <button
+            class="edit-button"
+            type="button"
+          >
+            Edit
+          </button>
+
+          <button
+            class="delete-button"
+            type="button"
+          >
+            Delete
+          </button>
+
+        </div>
+      `;
+
+      card
+        .querySelector(
+          '.view-button'
+        )
+        .addEventListener(
+          'click',
+          () =>
+            openDetailsModal(dish)
+        );
+
+      card
+        .querySelector(
+          '.edit-button'
+        )
+        .addEventListener(
+          'click',
+          () =>
+            openDishModal(dish)
+        );
+
+      card
+        .querySelector(
+          '.delete-button'
+        )
+        .addEventListener(
+          'click',
+          () =>
+            confirmDeleteDish(dish)
+        );
+
+      return card;
+    }
+
+
+    function openDetailsModal(dish) {
+      appState.selectedDish = dish;
+
+      const categoryBadges =
+        dish.mainCategories
+          .map(category => `
+            <span class="category-badge">
+              ${escapeHtml(category)}
+            </span>
+          `)
+          .join('');
+
+      const mainIngredients =
+        renderDetailsTags(
+          dish.mainIngredients
+        );
+
+      const subIngredients =
+        dish.subIngredients.length
+          ? renderDetailsTags(
+              dish.subIngredients
+            )
+          : `
+            <span class="details-tag">
+              None added
+            </span>
+          `;
+
+      document
+        .getElementById(
+          'detailsContent'
+        )
+        .innerHTML = `
+          <h2 class="details-dish-name">
+            ${escapeHtml(dish.dishName)}
+          </h2>
+
+          <div class="details-categories">
+            ${categoryBadges}
+          </div>
+
+
+          <section class="details-section">
+
+            <h3 class="details-heading">
+              Description
+            </h3>
+
+            <p class="details-text">
+              ${
+                dish.description
+                  ? escapeHtml(
+                      dish.description
+                    )
+                  : 'No description added.'
+              }
+            </p>
+
+          </section>
+
+
+          <section class="details-section">
+
+            <h3 class="details-heading">
+              Main Ingredients
+            </h3>
+
+            <div class="details-tag-list">
+              ${mainIngredients}
+            </div>
+
+          </section>
+
+
+          <section class="details-section">
+
+            <h3 class="details-heading">
+              Sub Ingredients
+            </h3>
+
+            <div class="details-tag-list">
+              ${subIngredients}
+            </div>
+
+          </section>
+
+
+          <section class="details-section">
+
+            <h3 class="details-heading">
+              Recipe Guideline
+            </h3>
+
+            <p class="details-text">
+              ${
+                dish.recipeGuideline
+                  ? escapeHtml(
+                      dish.recipeGuideline
+                    )
+                  : 'No recipe guideline added.'
+              }
+            </p>
+
+          </section>
+
+
+          <section class="details-section">
+
+            <h3 class="details-heading">
+              Cooking Instructions
+            </h3>
+
+            <p class="details-text">
+              ${
+                dish.cookingInstructions
+                  ? escapeHtml(
+                      dish.cookingInstructions
+                    )
+                  : 'No cooking instructions added.'
+              }
+            </p>
+
+          </section>
+        `;
+
+      document
+        .getElementById(
+          'detailsModalBackdrop'
+        )
+        .classList.add('open');
+    }
+
+
+    function closeDetailsModal() {
+      document
+        .getElementById(
+          'detailsModalBackdrop'
+        )
+        .classList.remove('open');
+
+      appState.selectedDish = null;
+    }
+
+
+    function renderDetailsTags(items) {
+      return items
+        .map(item => `
+          <span class="details-tag">
+            ${escapeHtml(item)}
+          </span>
+        `)
+        .join('');
+    }
+
+
+    function updateResultSummary(count) {
+      const filters = [];
+
+      if (
+        appState.activeCategories.length
+      ) {
+        filters.push(
+          appState
+            .activeCategories
+            .join(', ')
+        );
+      }
+
+      if (appState.searchTerm) {
+        filters.push(
+          `"${appState.searchTerm}"`
+        );
+      }
+
+      const description =
+        filters.length
+          ? ` for ${filters.join(' and ')}`
+          : '';
+
+      document
+        .getElementById(
+          'resultSummary'
+        )
+        .textContent =
+          `${count} ${
+            count === 1
+              ? 'result'
+              : 'results'
+          }${description}`;
+    }
+
+
+    function renderSearchAutocomplete() {
+      const container =
+        document.getElementById(
+          'searchAutocomplete'
+        );
+
+      const searchTerm =
+        normalizeText(
+          appState.searchTerm
+        );
+
+      if (!searchTerm) {
+        hideSearchAutocomplete();
+        return;
+      }
+
+      const ingredientResults =
+        appState
+          .ingredientSuggestions
+          .filter(ingredient =>
+            normalizeText(
+              ingredient
+            ).includes(searchTerm)
+          )
+          .map(ingredient => ({
+            value: ingredient,
+            type: 'Ingredient'
+          }));
+
+      const dishResults =
+        appState
+          .dishes
+          .map(dish => dish.dishName)
+          .filter(name =>
+            normalizeText(name)
+              .includes(searchTerm)
+          )
+          .map(name => ({
+            value: name,
+            type: 'Dish'
+          }));
+
+      const suggestions =
+        uniqueSuggestions([
+          ...ingredientResults,
+          ...dishResults
+        ]).slice(0, 10);
+
+      if (!suggestions.length) {
+        hideSearchAutocomplete();
+        return;
+      }
+
+      container.innerHTML = '';
+
+      suggestions.forEach(
+        (suggestion, index) => {
+          const button =
+            document.createElement(
+              'button'
+            );
+
+          button.type = 'button';
+
+          button.className =
+            `autocomplete-item${
+              index ===
+              appState.autocompleteIndex
+                ? ' active'
+                : ''
+            }`;
+
+          button.innerHTML = `
+            <strong>
+              ${escapeHtml(
+                suggestion.value
+              )}
+            </strong>
+
+            <span class="autocomplete-type">
+              ${escapeHtml(
+                suggestion.type
+              )}
+            </span>
+          `;
+
+          button.addEventListener(
+            'mousedown',
+            event => {
+              event.preventDefault();
+
+              selectSearchSuggestion(
+                suggestion.value
+              );
+            }
+          );
+
+          container.appendChild(button);
+        }
+      );
+
+      container.style.display = 'block';
+    }
+
+
+    function handleSearchKeyboard(event) {
+      const container =
+        document.getElementById(
+          'searchAutocomplete'
+        );
+
+      const buttons =
+        Array.from(
+          container.querySelectorAll(
+            '.autocomplete-item'
+          )
+        );
+
+      if (
+        container.style.display !==
+          'block' ||
+        !buttons.length
+      ) {
+        return;
+      }
+
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+
+        appState.autocompleteIndex =
+          Math.min(
+            appState.autocompleteIndex + 1,
+            buttons.length - 1
+          );
+
+        renderSearchAutocomplete();
+      }
+
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+
+        appState.autocompleteIndex =
+          Math.max(
+            appState.autocompleteIndex - 1,
+            0
+          );
+
+        renderSearchAutocomplete();
+      }
+
+      if (
+        event.key === 'Enter' &&
+        appState.autocompleteIndex >= 0
+      ) {
+        event.preventDefault();
+
+        buttons[
+          appState.autocompleteIndex
+        ].dispatchEvent(
+          new MouseEvent('mousedown')
+        );
+      }
+    }
+
+
+    function selectSearchSuggestion(value) {
+      appState.searchTerm = value;
+
+      const input =
+        document.getElementById(
+          'searchInput'
+        );
+
+      input.value = value;
+
+      document
+        .getElementById(
+          'clearSearchButton'
+        )
+        .style.display = 'block';
+
+      hideSearchAutocomplete();
+      renderDishes();
+    }
+
+
+    function hideSearchAutocomplete() {
+      const container =
+        document.getElementById(
+          'searchAutocomplete'
+        );
+
+      container.style.display = 'none';
+      container.innerHTML = '';
+
+      appState.autocompleteIndex = -1;
+    }
+
+
+    function openDishModal(dish = null) {
+      document
+        .getElementById(
+          'modalTitle'
+        )
+        .textContent =
+          dish
+            ? 'Edit Dish'
+            : 'Add Dish';
+
+      document
+        .getElementById(
+          'dishId'
+        )
+        .value =
+          dish
+            ? dish.id
+            : '';
+
+      document
+        .getElementById(
+          'dishName'
+        )
+        .value =
+          dish
+            ? dish.dishName
+            : '';
+
+      document
+        .getElementById(
+          'description'
+        )
+        .value =
+          dish
+            ? dish.description
+            : '';
+
+      document
+        .getElementById(
+          'recipeGuideline'
+        )
+        .value =
+          dish
+            ? dish.recipeGuideline
+            : '';
+
+      document
+        .getElementById(
+          'cookingInstructions'
+        )
+        .value =
+          dish
+            ? dish.cookingInstructions
+            : '';
+
+      const selectedCategories =
+        dish
+          ? dish.mainCategories
+          : [];
+
+      document
+        .querySelectorAll(
+          'input[name="mainCategory"]'
+        )
+        .forEach(checkbox => {
+          checkbox.checked =
+            selectedCategories.includes(
+              checkbox.value
+            );
+
+          checkbox
+            .closest(
+              '.category-checkbox-label'
+            )
+            .classList.toggle(
+              'selected',
+              checkbox.checked
+            );
+        });
+
+      mainIngredientEditor.setTags(
+        dish
+          ? dish.mainIngredients
+          : []
+      );
+
+      subIngredientEditor.setTags(
+        dish
+          ? dish.subIngredients
+          : []
+      );
+
+      document
+        .getElementById(
+          'dishModalBackdrop'
+        )
+        .classList.add('open');
+    }
+
+
+    function closeDishModal() {
+      document
+        .getElementById(
+          'dishModalBackdrop'
+        )
+        .classList.remove('open');
+
+      document
+        .getElementById(
+          'dishForm'
+        )
+        .reset();
+
+      document
+        .querySelectorAll(
+          '.category-checkbox-label'
+        )
+        .forEach(label =>
+          label.classList.remove(
+            'selected'
+          )
+        );
+
+      mainIngredientEditor.setTags([]);
+      subIngredientEditor.setTags([]);
+    }
+
+
+    function getSelectedMainCategories() {
+      return Array
+        .from(
+          document.querySelectorAll(
+            'input[name="mainCategory"]:checked'
+          )
+        )
+        .map(checkbox =>
+          checkbox.value
+        );
+    }
+
+
+    async function submitDishForm(event) {
+      event.preventDefault();
+
+      mainIngredientEditor
+        .commitPendingValue();
+
+      subIngredientEditor
+        .commitPendingValue();
+
+      const payload = {
+        id:
+          document
+            .getElementById(
+              'dishId'
+            )
+            .value
+            .trim(),
+
+        dishName:
+          document
+            .getElementById(
+              'dishName'
+            )
+            .value
+            .trim(),
+
+        mainCategories:
+          getSelectedMainCategories(),
+
+        mainIngredients:
+          mainIngredientEditor.getTags(),
+
+        subIngredients:
+          subIngredientEditor.getTags(),
+
+        description:
+          document
+            .getElementById(
+              'description'
+            )
+            .value
+            .trim(),
+
+        recipeGuideline:
+          document
+            .getElementById(
+              'recipeGuideline'
+            )
+            .value
+            .trim(),
+
+        cookingInstructions:
+          document
+            .getElementById(
+              'cookingInstructions'
+            )
+            .value
+            .trim()
+      };
+
+      if (!payload.dishName) {
+        showToast(
+          'Please enter the dish name.',
+          true
+        );
+
+        return;
+      }
+
+      if (!payload.mainCategories.length) {
+        showToast(
+          'Please select at least one main category.',
+          true
+        );
+
+        return;
+      }
+
+      if (!payload.mainIngredients.length) {
+        showToast(
+          'Please add at least one main ingredient.',
+          true
+        );
+
+        return;
+      }
+
+      const button =
+        document.getElementById(
+          'saveDishButton'
+        );
+
+      button.disabled = true;
+      button.textContent = 'Saving...';
+
+      try {
+        const response =
+          await window.ulamApi.saveDish(
+            payload
+          );
+
+          button.disabled = false;
+          button.textContent =
+            'Save Dish';
+
+          showToast(response.message);
+
+          closeDishModal();
+          await loadAppData();
+      } catch (error) {
+          button.disabled = false;
+          button.textContent =
+            'Save Dish';
+
+          handleServerError(error);
+      }
+    }
+
+
+    async function confirmDeleteDish(dish) {
+      const confirmed =
+        window.confirm(
+          `Delete "${dish.dishName}"?`
+        );
+
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+        const response =
+          await window.ulamApi.deleteDish(
+            dish.id
+          );
+
+          showToast(response.message);
+          await loadAppData();
+      } catch (error) {
+        handleServerError(error);
+      }
+    }
+
+
+    class TagEditor {
+      constructor(
+        rootElement,
+        suggestionProvider
+      ) {
+        this.root = rootElement;
+
+        this.input =
+          rootElement.querySelector(
+            '.tag-editor-input'
+          );
+
+        this.content =
+          rootElement.querySelector(
+            '.tag-editor-content'
+          );
+
+        this.suggestionBox =
+          rootElement.querySelector(
+            '.tag-suggestions'
+          );
+
+        this.suggestionProvider =
+          suggestionProvider;
+
+        this.tags = [];
+
+        this.bindEvents();
+      }
+
+
+      bindEvents() {
+        this.input.addEventListener(
+          'keydown',
+          event => {
+            if (
+              event.key === ',' ||
+              event.key === 'Enter'
+            ) {
+              event.preventDefault();
+
+              this.commitPendingValue();
+            }
+
+            if (
+              event.key === 'Backspace' &&
+              !this.input.value &&
+              this.tags.length
+            ) {
+              this.tags.pop();
+              this.renderTags();
+            }
+          }
+        );
+
+        this.input.addEventListener(
+          'input',
+          () => {
+            if (
+              this.input.value.includes(',')
+            ) {
+              const values =
+                this.input.value.split(',');
+
+              const remaining =
+                values.pop();
+
+              values.forEach(value =>
+                this.addTag(value)
+              );
+
+              this.input.value =
+                remaining;
+            }
+
+            this.renderSuggestions();
+          }
+        );
+
+        this.root.addEventListener(
+          'click',
+          () => this.input.focus()
+        );
+      }
+
+
+      addTag(value) {
+        const cleaned =
+          String(value || '')
+            .trim()
+            .replace(/\s+/g, ' ');
+
+        if (!cleaned) {
+          return;
+        }
+
+        const exists =
+          this.tags.some(
+            tag =>
+              normalizeText(tag) ===
+              normalizeText(cleaned)
+          );
+
+        if (exists) {
+          return;
+        }
+
+        this.tags.push(cleaned);
+        this.renderTags();
+      }
+
+
+      removeTag(index) {
+        this.tags.splice(index, 1);
+        this.renderTags();
+      }
+
+
+      commitPendingValue() {
+        this.addTag(
+          this.input.value
+        );
+
+        this.input.value = '';
+
+        this.hideSuggestions();
+      }
+
+
+      setTags(tags) {
+        this.tags =
+          uniqueTextItems(tags || []);
+
+        this.input.value = '';
+
+        this.renderTags();
+      }
+
+
+      getTags() {
+        return [...this.tags];
+      }
+
+
+      renderTags() {
+        this.content
+          .querySelectorAll(
+            '.editable-tag'
+          )
+          .forEach(element =>
+            element.remove()
+          );
+
+        this.tags.forEach(
+          (tag, index) => {
+            const tagElement =
+              document.createElement(
+                'span'
+              );
+
+            tagElement.className =
+              'editable-tag';
+
+            const tagText =
+              document.createElement(
+                'span'
+              );
+
+            tagText.textContent = tag;
+
+            const removeButton =
+              document.createElement(
+                'button'
+              );
+
+            removeButton.type = 'button';
+
+            removeButton.className =
+              'remove-tag-button';
+
+            removeButton.textContent = '×';
+
+            removeButton.addEventListener(
+              'click',
+              event => {
+                event.stopPropagation();
+
+                this.removeTag(index);
+              }
+            );
+
+            tagElement.appendChild(tagText);
+
+            tagElement.appendChild(
+              removeButton
+            );
+
+            this.content.insertBefore(
+              tagElement,
+              this.input
+            );
+          }
+        );
+      }
+
+
+      renderSuggestions() {
+        const searchTerm =
+          normalizeText(
+            this.input.value
+          );
+
+        if (!searchTerm) {
+          this.hideSuggestions();
+          return;
+        }
+
+        const suggestions =
+          this
+            .suggestionProvider()
+            .filter(ingredient =>
+              normalizeText(
+                ingredient
+              ).includes(searchTerm)
+            )
+            .filter(ingredient =>
+              !this.tags.some(
+                tag =>
+                  normalizeText(tag) ===
+                  normalizeText(
+                    ingredient
+                  )
+              )
+            )
+            .slice(0, 8);
+
+        if (!suggestions.length) {
+          this.hideSuggestions();
+          return;
+        }
+
+        this.suggestionBox.innerHTML = '';
+
+        suggestions.forEach(
+          ingredient => {
+            const button =
+              document.createElement(
+                'button'
+              );
+
+            button.type = 'button';
+
+            button.className =
+              'tag-suggestion-button';
+
+            button.textContent =
+              ingredient;
+
+            button.addEventListener(
+              'mousedown',
+              event => {
+                event.preventDefault();
+
+                this.addTag(ingredient);
+
+                this.input.value = '';
+
+                this.hideSuggestions();
+              }
+            );
+
+            this.suggestionBox.appendChild(
+              button
+            );
+          }
+        );
+
+        this.suggestionBox.style.display =
+          'block';
+      }
+
+
+      hideSuggestions() {
+        this.suggestionBox.style.display =
+          'none';
+
+        this.suggestionBox.innerHTML = '';
+      }
+    }
+
+
+    function handleServerError(error) {
+      document
+        .getElementById(
+          'loadingState'
+        )
+        .style.display = 'none';
+
+      showToast(
+        error && error.message
+          ? error.message
+          : 'Something went wrong.',
+        true
+      );
+    }
+
+
+    function showToast(
+      message,
+      isError = false
+    ) {
+      const toast =
+        document.getElementById(
+          'toast'
+        );
+
+      toast.textContent = message;
+
+      toast.className =
+        `toast show${
+          isError ? ' error' : ''
+        }`;
+
+      clearTimeout(
+        showToast.timeoutId
+      );
+
+      showToast.timeoutId =
+        setTimeout(() => {
+          toast.className = 'toast';
+        }, 3500);
+    }
+
+
+    function normalizeText(value) {
+      return String(value || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(
+          /[\u0300-\u036f]/g,
+          ''
+        )
+        .trim();
+    }
+
+
+    function uniqueTextItems(items) {
+      const result = [];
+      const seen = new Set();
+
+      items.forEach(item => {
+        const cleaned =
+          String(item || '').trim();
+
+        const key =
+          normalizeText(cleaned);
+
+        if (
+          cleaned &&
+          !seen.has(key)
+        ) {
+          seen.add(key);
+          result.push(cleaned);
+        }
+      });
+
+      return result;
+    }
+
+
+    function uniqueSuggestions(items) {
+      const result = [];
+      const seen = new Set();
+
+      items.forEach(item => {
+        const key =
+          normalizeText(item.value);
+
+        if (!seen.has(key)) {
+          seen.add(key);
+          result.push(item);
+        }
+      });
+
+      return result;
+    }
+
+
+    function escapeHtml(value) {
+      return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+
+</body>
+</html>
