@@ -137,6 +137,21 @@
         rgba(0, 0, 0, 0.15);
     }
 
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .auth-button {
+      padding: 12px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.45);
+      border-radius: 12px;
+      background: transparent;
+      color: white;
+      font-weight: 700;
+    }
+
     .search-container {
       position: relative;
       max-width: 860px;
@@ -1033,7 +1048,7 @@
       <div class="hero-header">
         <div>
           <span class="eyebrow">
-            Google Sheets Powered
+            Firebase Powered
           </span>
 
           <h1>
@@ -1041,13 +1056,25 @@
           </h1>
         </div>
 
-        <button
-          class="add-dish-button"
-          type="button"
-          onclick="openDishModal()"
-        >
-          + Add Dish
-        </button>
+        <div class="hero-actions">
+          <button
+            id="authButton"
+            class="auth-button"
+            type="button"
+          >
+            Editor Sign In
+          </button>
+
+          <button
+            id="addDishButton"
+            class="add-dish-button"
+            type="button"
+            onclick="openDishModal()"
+            hidden
+          >
+            + Add Dish
+          </button>
+        </div>
       </div>
 
       <div class="search-container">
@@ -1442,6 +1469,9 @@
       searchTerm: '',
       autocompleteIndex: -1,
       selectedDish: null
+      ,
+      canEdit: false,
+      editorEmail: ''
     };
 
 
@@ -1467,6 +1497,9 @@
 
     function initializeApp() {
       bindPageEvents();
+      window.ulamApi.subscribeToAuth(
+        updateAuthState
+      );
       loadAppData();
     }
 
@@ -1475,6 +1508,13 @@
       const searchInput =
         document.getElementById(
           'searchInput'
+        );
+
+      document
+        .getElementById('authButton')
+        .addEventListener(
+          'click',
+          handleAuthButton
         );
 
       searchInput.addEventListener(
@@ -1583,6 +1623,53 @@
           }
         }
       );
+    }
+
+
+    async function handleAuthButton() {
+      try {
+        if (appState.editorEmail) {
+          await window.ulamApi.signOutEditor();
+        } else {
+          await window.ulamApi.signInEditor();
+        }
+      } catch (error) {
+        handleServerError(error);
+      }
+    }
+
+
+    function updateAuthState(authState) {
+      appState.canEdit =
+        Boolean(authState.canEdit);
+
+      appState.editorEmail =
+        authState.email || '';
+
+      const authButton =
+        document.getElementById(
+          'authButton'
+        );
+
+      authButton.textContent =
+        appState.editorEmail
+          ? 'Sign Out'
+          : 'Editor Sign In';
+
+      authButton.title =
+        appState.editorEmail;
+
+      document
+        .getElementById('addDishButton')
+        .hidden = !appState.canEdit;
+
+      document
+        .getElementById(
+          'detailsEditButton'
+        )
+        .hidden = !appState.canEdit;
+
+      renderDishes();
     }
 
 
@@ -1994,19 +2081,21 @@
             View Details
           </button>
 
-          <button
-            class="edit-button"
-            type="button"
-          >
-            Edit
-          </button>
+          ${appState.canEdit ? `
+            <button
+              class="edit-button"
+              type="button"
+            >
+              Edit
+            </button>
 
-          <button
-            class="delete-button"
-            type="button"
-          >
-            Delete
-          </button>
+            <button
+              class="delete-button"
+              type="button"
+            >
+              Delete
+            </button>
+          ` : ''}
 
         </div>
       `;
@@ -2021,25 +2110,25 @@
             openDetailsModal(dish)
         );
 
-      card
-        .querySelector(
-          '.edit-button'
-        )
-        .addEventListener(
-          'click',
-          () =>
-            openDishModal(dish)
-        );
+      const editButton =
+        card.querySelector('.edit-button');
 
-      card
-        .querySelector(
-          '.delete-button'
-        )
-        .addEventListener(
+      if (editButton) {
+        editButton.addEventListener(
           'click',
-          () =>
-            confirmDeleteDish(dish)
+          () => openDishModal(dish)
         );
+      }
+
+      const deleteButton =
+        card.querySelector('.delete-button');
+
+      if (deleteButton) {
+        deleteButton.addEventListener(
+          'click',
+          () => confirmDeleteDish(dish)
+        );
+      }
 
       return card;
     }
