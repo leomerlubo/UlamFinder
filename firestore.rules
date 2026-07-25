@@ -1,0 +1,20 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /dishes/{dishId} {
+      allow read: if true;
+
+      allow create, update: if request.auth != null
+        && request.resource.data.dishName is string
+        && request.resource.data.dishName.size() > 0
+        && request.resource.data.mainCategories is list
+        && request.resource.data.mainCategories.size() > 0
+        && request.resource.data.mainIngredients is list
+        && request.resource.data.mainIngredients.size() > 0;
+
+      allow delete: if request.auth != null;
+    }
+  }
+}
+
