@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+  <defs>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a7c957"/>
+      <stop offset="1" stop-color="#416b38"/>
+    </linearGradient>
+    <linearGradient id="pot" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#d36b3f"/>
+      <stop offset="1" stop-color="#8f341f"/>
+    </linearGradient>
+  </defs>
+  <circle cx="48" cy="48" r="46" fill="#fff8df"/>
+  <path d="M13 52C20 22 43 12 70 15C59 38 40 51 13 52Z" fill="url(#leaf)"/>
+  <path d="M18 48C34 37 48 28 65 19" fill="none" stroke="#dce9a8" stroke-width="2" stroke-linecap="round"/>
+  <path d="M34 29C31 22 38 18 35 11M48 28C45 21 52 17 49 9M62 30C59 23 66 19 63 12" fill="none" stroke="#d99a28" stroke-width="3" stroke-linecap="round"/>
+  <path d="M26 54H70C69 72 61 82 48 84C35 82 27 72 26 54Z" fill="url(#pot)"/>
+  <path d="M21 53C21 49 25 46 30 46H66C71 46 75 49 75 53H21Z" fill="#74301f"/>
+  <path d="M34 45C37 38 59 38 62 45" fill="#b84a29" stroke="#74301f" stroke-width="2"/>
+  <path d="M23 61C16 61 14 56 17 52M73 61C80 61 82 56 79 52" fill="none" stroke="#74301f" stroke-width="4" stroke-linecap="round"/>
+  <path d="M35 67C42 71 54 71 61 67" fill="none" stroke="#e58a5e" stroke-width="2" stroke-linecap="round"/>
+</svg>
