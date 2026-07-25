@@ -11,9 +11,11 @@ import {
   setDoc
 } from 'firebase/firestore';
 import {
+  GoogleAuthProvider,
   getAuth,
   onAuthStateChanged,
-  signInAnonymously
+  signInWithPopup,
+  signOut
 } from 'firebase/auth';
 
 const CATEGORIES = [
@@ -48,29 +50,20 @@ if (missingConfig.length) {
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getFirestore(firebaseApp);
 const auth = getAuth(firebaseApp);
+const googleProvider = new GoogleAuthProvider();
 
-const authReady = new Promise((resolve, reject) => {
-  const unsubscribe = onAuthStateChanged(
-    auth,
-    async user => {
-      if (user) {
-        unsubscribe();
-        resolve(user);
-        return;
-      }
+function canEdit(user = auth.currentUser) {
+  return Boolean(user && user.email);
+}
 
-      try {
-        const result = await signInAnonymously(auth);
-        unsubscribe();
-        resolve(result.user);
-      } catch (error) {
-        unsubscribe();
-        reject(error);
-      }
-    },
-    reject
-  );
-});
+async function requireEditor() {
+  if (!auth.currentUser) {
+    throw new Error(
+      'Please sign in with an approved Google account.'
+    );
+  }
+
+}
 
 function normalizeList(value) {
   const rawItems = Array.isArray(value)
@@ -183,7 +176,6 @@ function ingredientSuggestions(dishes) {
 }
 
 async function getAppData() {
-  await authReady;
   const result = await getDocs(
     query(collection(db, 'dishes'), orderBy('dishName'))
   );
@@ -199,7 +191,7 @@ async function getAppData() {
 
 async function saveDish(payload) {
   validateDish(payload);
-  await authReady;
+  await requireEditor();
 
   const id = String(payload.id || '').trim();
   const dishRef = id
@@ -246,7 +238,7 @@ async function saveDish(payload) {
 
 async function deleteDish(id) {
   if (!id) throw new Error('Dish not found.');
-  await authReady;
+  await requireEditor();
   await deleteDoc(doc(db, 'dishes', String(id)));
 
   return {
@@ -255,9 +247,29 @@ async function deleteDish(id) {
   };
 }
 
+async function signInEditor() {
+  const result = await signInWithPopup(
+    auth,
+    googleProvider
+  );
+
+  return result.user;
+}
+
+function subscribeToAuth(callback) {
+  return onAuthStateChanged(auth, user => {
+    callback({
+      email: user && user.email ? user.email : '',
+      canEdit: canEdit(user)
+    });
+  });
+}
+
 window.ulamApi = {
   getAppData,
   saveDish,
-  deleteDish
+  deleteDish,
+  signInEditor,
+  signOutEditor: () => signOut(auth),
+  subscribeToAuth
 };
-
