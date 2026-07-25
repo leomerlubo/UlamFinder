@@ -28,6 +28,7 @@ The build command is `npm run build` and the output directory is `dist`.
 Dish documents are stored in the `dishes` collection. Each document contains:
 
 * `dishName`
+* `variants`
 * `mainCategories`
 * `mainIngredients`
 * `subIngredients`
@@ -36,5 +37,10 @@ Dish documents are stored in the `dishes` collection. Each document contains:
 * `cookingInstructions`
 * `createdAt`
 * `updatedAt`
+
+`variants` is an array of complete versions of the shared dish. Each variant
+contains its own `name`, `mainCategory`, `mainIngredients`, `subIngredients`,
+`description`, `recipeGuideline`, and `cookingInstructions`. The aggregate
+fields remain in each document for compatibility with older saved dishes.
 
 Public visitors can browse dishes. Configure the approved editor accounts privately in the Firebase console. The repository rules deny writes until that private rule is published.

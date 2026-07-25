@@ -93,6 +93,79 @@ function normalizeCategories(value) {
   );
 }
 
+function normalizeVariant(value) {
+  const source =
+    value && typeof value === 'object' ? value : {};
+  const mainCategory =
+    CATEGORIES.includes(source.mainCategory)
+      ? source.mainCategory
+      : normalizeCategories(source.mainCategories)[0] || '';
+
+  return {
+    name:
+      String(source.name || '').trim(),
+    mainCategory,
+    mainIngredients: normalizeList(
+      source.mainIngredients
+    ),
+    subIngredients: normalizeList(
+      source.subIngredients
+    ),
+    description: String(
+      source.description || ''
+    ).trim(),
+    recipeGuideline: String(
+      source.recipeGuideline || ''
+    ).trim(),
+    cookingInstructions: String(
+      source.cookingInstructions || ''
+    ).trim()
+  };
+}
+
+function normalizeVariants(value) {
+  if (!Array.isArray(value)) return [];
+
+  return value
+    .map(normalizeVariant)
+    .filter(variant =>
+      variant.mainCategory ||
+      variant.mainIngredients.length ||
+      variant.name
+    );
+}
+
+function variantsFromLegacyDish(data) {
+  const categories = normalizeCategories(
+    data.mainCategories
+  );
+  const sharedDetails = {
+    mainIngredients: normalizeList(
+      data.mainIngredients
+    ),
+    subIngredients: normalizeList(
+      data.subIngredients
+    ),
+    description: String(data.description || ''),
+    recipeGuideline: String(
+      data.recipeGuideline || ''
+    ),
+    cookingInstructions: String(
+      data.cookingInstructions || ''
+    )
+  };
+
+  return categories.map(category =>
+    normalizeVariant(
+      {
+        name: category,
+        mainCategory: category,
+        ...sharedDetails
+      }
+    )
+  );
+}
+
 function validateDish(payload) {
   if (!payload || typeof payload !== 'object') {
     throw new Error('Invalid dish information.');
@@ -102,17 +175,35 @@ function validateDish(payload) {
     throw new Error('Dish name is required.');
   }
 
-  if (!normalizeCategories(payload.mainCategories).length) {
+  const variants = normalizeVariants(payload.variants);
+
+  if (!variants.length) {
     throw new Error(
-      'Please select at least one main category.'
+      'Please add at least one dish variant.'
     );
   }
 
-  if (!normalizeList(payload.mainIngredients).length) {
-    throw new Error(
-      'Please add at least one main ingredient.'
-    );
-  }
+  variants.forEach((variant, index) => {
+    const label = variant.name || `Variant ${index + 1}`;
+
+    if (!variant.name) {
+      throw new Error(
+        `Please enter a name for variant ${index + 1}.`
+      );
+    }
+
+    if (!variant.mainCategory) {
+      throw new Error(
+        `Please select a category for ${label}.`
+      );
+    }
+
+    if (!variant.mainIngredients.length) {
+      throw new Error(
+        `Please add a main ingredient for ${label}.`
+      );
+    }
+  });
 }
 
 function serializeTimestamp(value) {
@@ -129,26 +220,32 @@ function serializeTimestamp(value) {
 
 function mapDish(snapshot) {
   const data = snapshot.data();
+  const savedVariants = normalizeVariants(data.variants);
+  const variants = savedVariants.length
+    ? savedVariants
+    : variantsFromLegacyDish(data);
+  const firstVariant = variants[0] || normalizeVariant({});
 
   return {
     id: snapshot.id,
     dishName: String(data.dishName || ''),
-    mainCategories: normalizeCategories(
-      data.mainCategories
+    variants,
+    mainCategories: normalizeList(
+      variants.map(variant => variant.mainCategory)
     ),
     mainIngredients: normalizeList(
-      data.mainIngredients
+      variants.flatMap(
+        variant => variant.mainIngredients
+      )
     ),
     subIngredients: normalizeList(
-      data.subIngredients
+      variants.flatMap(
+        variant => variant.subIngredients
+      )
     ),
-    description: String(data.description || ''),
-    recipeGuideline: String(
-      data.recipeGuideline || ''
-    ),
-    cookingInstructions: String(
-      data.cookingInstructions || ''
-    ),
+    description: firstVariant.description,
+    recipeGuideline: firstVariant.recipeGuideline,
+    cookingInstructions: firstVariant.cookingInstructions,
     createdAt: serializeTimestamp(data.createdAt),
     updatedAt: serializeTimestamp(data.updatedAt)
   };
@@ -158,10 +255,10 @@ function ingredientSuggestions(dishes) {
   const suggestions = new Map();
 
   dishes.forEach(dish => {
-    [
-      ...dish.mainIngredients,
-      ...dish.subIngredients
-    ].forEach(ingredient => {
+    dish.variants.flatMap(variant => [
+      ...variant.mainIngredients,
+      ...variant.subIngredients
+    ]).forEach(ingredient => {
       const cleaned = String(ingredient || '').trim();
       const key = cleaned.toLowerCase();
       if (cleaned && !suggestions.has(key)) {
@@ -198,27 +295,28 @@ async function saveDish(payload) {
     ? doc(db, 'dishes', id)
     : doc(collection(db, 'dishes'));
   const isUpdate = Boolean(id);
+  const variants = normalizeVariants(payload.variants);
+  const firstVariant = variants[0];
 
   const dish = {
     dishName: String(payload.dishName).trim(),
-    mainCategories: normalizeCategories(
-      payload.mainCategories
+    variants,
+    mainCategories: normalizeList(
+      variants.map(variant => variant.mainCategory)
     ),
     mainIngredients: normalizeList(
-      payload.mainIngredients
+      variants.flatMap(
+        variant => variant.mainIngredients
+      )
     ),
     subIngredients: normalizeList(
-      payload.subIngredients
+      variants.flatMap(
+        variant => variant.subIngredients
+      )
     ),
-    description: String(
-      payload.description || ''
-    ).trim(),
-    recipeGuideline: String(
-      payload.recipeGuideline || ''
-    ).trim(),
-    cookingInstructions: String(
-      payload.cookingInstructions || ''
-    ).trim(),
+    description: firstVariant.description,
+    recipeGuideline: firstVariant.recipeGuideline,
+    cookingInstructions: firstVariant.cookingInstructions,
     updatedAt: serverTimestamp()
   };
 

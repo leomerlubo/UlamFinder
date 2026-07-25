@@ -657,6 +657,78 @@
       line-height: 1.5;
     }
 
+    .variant-section-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .variant-section-header .field-help {
+      margin: 5px 0 0;
+    }
+
+    .add-variant-button {
+      flex: 0 0 auto;
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 11px;
+      background: var(--primary);
+      color: white;
+      font-weight: 700;
+    }
+
+    .variant-list {
+      display: grid;
+      gap: 18px;
+    }
+
+    .variant-card {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #fffbf7;
+    }
+
+    .variant-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .variant-card-title {
+      margin: 0;
+      color: var(--primary-dark);
+      font-size: 18px;
+    }
+
+    .remove-variant-button {
+      padding: 8px 11px;
+      border: 1px solid #fecaca;
+      border-radius: 9px;
+      background: #fff1f2;
+      color: var(--danger);
+      font-weight: 700;
+    }
+
+    .variant-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .variant-form-grid .full {
+      grid-column: 1 / -1;
+    }
+
+    .variant-count {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
     .category-checkbox-grid {
       display: grid;
 
@@ -884,6 +956,38 @@
       margin-bottom: 22px;
     }
 
+    .variant-picker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin: 18px 0 22px;
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #fafaf9;
+    }
+
+    .variant-picker-button {
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: white;
+      color: var(--primary-dark);
+      font-weight: 700;
+    }
+
+    .variant-picker-button.active {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: white;
+    }
+
+    .details-variant-name {
+      margin: 0 0 8px;
+      color: var(--text);
+      font-size: 22px;
+    }
+
     .details-section {
       padding: 17px 0;
 
@@ -1002,12 +1106,25 @@
       .category-grid,
       .dish-grid,
       .form-grid,
-      .category-checkbox-grid {
+      .category-checkbox-grid,
+      .variant-form-grid {
         grid-template-columns: 1fr;
       }
 
       .form-field.full {
         grid-column: auto;
+      }
+
+      .variant-form-grid .full {
+        grid-column: auto;
+      }
+
+      .variant-section-header {
+        flex-direction: column;
+      }
+
+      .add-variant-button {
+        width: 100%;
       }
 
       .results-toolbar {
@@ -1243,127 +1360,32 @@
 
           <div class="form-field full">
 
-            <label class="form-label">
-              Main Categories
-              <span class="required">*</span>
-            </label>
+            <div class="variant-section-header">
+              <div>
+                <div class="form-label">
+                  Dish Variants
+                  <span class="required">*</span>
+                </div>
+
+                <p class="field-help">
+                  Add each version as a complete dish. The shared dish
+                  name will appear only once in the main list.
+                </p>
+              </div>
+
+              <button
+                id="addVariantButton"
+                class="add-variant-button"
+                type="button"
+              >
+                + Add Variant
+              </button>
+            </div>
 
             <div
-              id="categoryCheckboxGrid"
-              class="category-checkbox-grid"
+              id="variantList"
+              class="variant-list"
             ></div>
-
-          </div>
-
-
-          <div class="form-field full">
-
-            <label class="form-label">
-              Main Ingredients
-              <span class="required">*</span>
-            </label>
-
-            <div
-              id="mainIngredientEditor"
-              class="tag-editor"
-            >
-
-              <div class="tag-editor-content">
-
-                <input
-                  class="tag-editor-input"
-                  type="text"
-                  autocomplete="off"
-                  placeholder="Type an ingredient, then press comma or Enter"
-                >
-
-              </div>
-
-              <div class="tag-suggestions"></div>
-
-            </div>
-
-          </div>
-
-
-          <div class="form-field full">
-
-            <label class="form-label">
-              Sub Ingredients
-            </label>
-
-            <div
-              id="subIngredientEditor"
-              class="tag-editor"
-            >
-
-              <div class="tag-editor-content">
-
-                <input
-                  class="tag-editor-input"
-                  type="text"
-                  autocomplete="off"
-                  placeholder="Type an ingredient, then press comma or Enter"
-                >
-
-              </div>
-
-              <div class="tag-suggestions"></div>
-
-            </div>
-
-          </div>
-
-
-          <div class="form-field full">
-
-            <label
-              class="form-label"
-              for="description"
-            >
-              Description
-            </label>
-
-            <textarea
-              id="description"
-              class="text-area"
-            ></textarea>
-
-          </div>
-
-
-          <div class="form-field full">
-
-            <label
-              class="form-label"
-              for="recipeGuideline"
-            >
-              Recipe Guideline
-            </label>
-
-            <textarea
-              id="recipeGuideline"
-              class="text-area large"
-              placeholder="Add preparation notes, measurements, serving information, or recipe guidance"
-            ></textarea>
-
-          </div>
-
-
-          <div class="form-field full">
-
-            <label
-              class="form-label"
-              for="cookingInstructions"
-            >
-              Cooking Instructions
-            </label>
-
-            <textarea
-              id="cookingInstructions"
-              class="text-area large"
-              placeholder="Enter the steps for cooking the dish"
-            ></textarea>
 
           </div>
 
@@ -1468,8 +1490,8 @@
       activeCategories: [],
       searchTerm: '',
       autocompleteIndex: -1,
-      selectedDish: null
-      ,
+      selectedDish: null,
+      selectedVariantIndex: 0,
       canEdit: false,
       editorEmail: ''
     };
@@ -1485,8 +1507,8 @@
     };
 
 
-    let mainIngredientEditor;
-    let subIngredientEditor;
+    let variantEditorCounter = 0;
+    let variantEditors = [];
 
 
     document.addEventListener(
@@ -1515,6 +1537,13 @@
         .addEventListener(
           'click',
           handleAuthButton
+        );
+
+      document
+        .getElementById('addVariantButton')
+        .addEventListener(
+          'click',
+          () => addVariantEditor()
         );
 
       searchInput.addEventListener(
@@ -1693,8 +1722,6 @@
           appState.ingredientSuggestions =
             data.ingredientSuggestions || [];
 
-          renderCategoryCheckboxes();
-          initializeTagEditors();
           renderCategoryCards();
           renderDishes();
 
@@ -1706,89 +1733,6 @@
       } catch (error) {
         handleServerError(error);
       }
-    }
-
-
-    function initializeTagEditors() {
-      if (!mainIngredientEditor) {
-        mainIngredientEditor =
-          new TagEditor(
-            document.getElementById(
-              'mainIngredientEditor'
-            ),
-            () =>
-              appState
-                .ingredientSuggestions
-          );
-      }
-
-      if (!subIngredientEditor) {
-        subIngredientEditor =
-          new TagEditor(
-            document.getElementById(
-              'subIngredientEditor'
-            ),
-            () =>
-              appState
-                .ingredientSuggestions
-          );
-      }
-    }
-
-
-    function renderCategoryCheckboxes() {
-      const container =
-        document.getElementById(
-          'categoryCheckboxGrid'
-        );
-
-      container.innerHTML = '';
-
-      appState.categories.forEach(
-        category => {
-          const label =
-            document.createElement(
-              'label'
-            );
-
-          label.className =
-            'category-checkbox-label';
-
-          const checkbox =
-            document.createElement(
-              'input'
-            );
-
-          checkbox.type = 'checkbox';
-          checkbox.value = category;
-          checkbox.name = 'mainCategory';
-
-          const text =
-            document.createElement(
-              'span'
-            );
-
-          text.textContent =
-            `${
-              categoryIcons[category] || '🍲'
-            } ${category}`;
-
-          checkbox.addEventListener(
-            'change',
-            () => {
-              label.classList.toggle(
-                'selected',
-                checkbox.checked
-              );
-            }
-          );
-
-          label.appendChild(checkbox);
-          label.appendChild(text);
-
-          container.appendChild(label);
-        }
-      );
     }
 
 
@@ -1991,11 +1935,19 @@
           const searchableContent = [
             dish.dishName,
             ...dish.mainCategories,
-            ...dish.mainIngredients,
-            ...dish.subIngredients,
-            dish.description,
-            dish.recipeGuideline,
-            dish.cookingInstructions
+            ...dish.variants.flatMap(
+              variant => [
+                variant.name,
+                `${dish.dishName} ${variant.name}`,
+                `${variant.name} ${dish.dishName}`,
+                variant.mainCategory,
+                ...variant.mainIngredients,
+                ...variant.subIngredients,
+                variant.description,
+                variant.recipeGuideline,
+                variant.cookingInstructions
+              ]
+            )
           ].join(' ');
 
           return normalizeText(
@@ -2071,6 +2023,15 @@
 
         </div>
 
+        <p class="variant-count">
+          ${dish.variants.length}
+          ${
+            dish.variants.length === 1
+              ? 'variant'
+              : 'variants'
+          }
+        </p>
+
 
         <div class="card-actions">
 
@@ -2136,25 +2097,63 @@
 
     function openDetailsModal(dish) {
       appState.selectedDish = dish;
+      appState.selectedVariantIndex = 0;
+
+      renderDetailsModal();
+
+      document
+        .getElementById(
+          'detailsModalBackdrop'
+        )
+        .classList.add('open');
+    }
+
+
+    function renderDetailsModal() {
+      const dish = appState.selectedDish;
+
+      if (!dish || !dish.variants.length) {
+        return;
+      }
+
+      const safeIndex = Math.min(
+        appState.selectedVariantIndex,
+        dish.variants.length - 1
+      );
+      const variant = dish.variants[safeIndex];
+      appState.selectedVariantIndex = safeIndex;
 
       const categoryBadges =
-        dish.mainCategories
-          .map(category => `
+        `
             <span class="category-badge">
-              ${escapeHtml(category)}
+              ${escapeHtml(variant.mainCategory)}
             </span>
+        `;
+
+      const variantButtons =
+        dish.variants
+          .map((item, index) => `
+            <button
+              class="variant-picker-button${
+                index === safeIndex ? ' active' : ''
+              }"
+              type="button"
+              data-variant-index="${index}"
+            >
+              ${escapeHtml(item.name)}
+            </button>
           `)
           .join('');
 
       const mainIngredients =
         renderDetailsTags(
-          dish.mainIngredients
+          variant.mainIngredients
         );
 
       const subIngredients =
-        dish.subIngredients.length
+        variant.subIngredients.length
           ? renderDetailsTags(
-              dish.subIngredients
+              variant.subIngredients
             )
           : `
             <span class="details-tag">
@@ -2171,6 +2170,14 @@
             ${escapeHtml(dish.dishName)}
           </h2>
 
+          <div class="variant-picker">
+            ${variantButtons}
+          </div>
+
+          <h3 class="details-variant-name">
+            ${escapeHtml(variant.name)}
+          </h3>
+
           <div class="details-categories">
             ${categoryBadges}
           </div>
@@ -2184,9 +2191,9 @@
 
             <p class="details-text">
               ${
-                dish.description
+                variant.description
                   ? escapeHtml(
-                      dish.description
+                      variant.description
                     )
                   : 'No description added.'
               }
@@ -2229,9 +2236,9 @@
 
             <p class="details-text">
               ${
-                dish.recipeGuideline
+                variant.recipeGuideline
                   ? escapeHtml(
-                      dish.recipeGuideline
+                      variant.recipeGuideline
                     )
                   : 'No recipe guideline added.'
               }
@@ -2248,9 +2255,9 @@
 
             <p class="details-text">
               ${
-                dish.cookingInstructions
+                variant.cookingInstructions
                   ? escapeHtml(
-                      dish.cookingInstructions
+                      variant.cookingInstructions
                     )
                   : 'No cooking instructions added.'
               }
@@ -2260,10 +2267,19 @@
         `;
 
       document
-        .getElementById(
-          'detailsModalBackdrop'
+        .querySelectorAll(
+          '.variant-picker-button'
         )
-        .classList.add('open');
+        .forEach(button => {
+          button.addEventListener(
+            'click',
+            () => {
+              appState.selectedVariantIndex =
+                Number(button.dataset.variantIndex);
+              renderDetailsModal();
+            }
+          );
+        });
     }
 
 
@@ -2275,6 +2291,7 @@
         .classList.remove('open');
 
       appState.selectedDish = null;
+      appState.selectedVariantIndex = 0;
     }
 
 
@@ -2368,10 +2385,25 @@
             type: 'Dish'
           }));
 
+      const variantResults =
+        appState
+          .dishes
+          .flatMap(dish =>
+            dish.variants.map(variant => ({
+              value: variant.name,
+              type: dish.dishName
+            }))
+          )
+          .filter(item =>
+            normalizeText(item.value)
+              .includes(searchTerm)
+          );
+
       const suggestions =
         uniqueSuggestions([
           ...ingredientResults,
-          ...dishResults
+          ...dishResults,
+          ...variantResults
         ]).slice(0, 10);
 
       if (!suggestions.length) {
@@ -2525,6 +2557,280 @@
     }
 
 
+    function createTagEditorMarkup() {
+      return `
+        <div class="tag-editor-content">
+          <input
+            class="tag-editor-input"
+            type="text"
+            autocomplete="off"
+            placeholder="Type an ingredient, then press comma or Enter"
+          >
+        </div>
+        <div class="tag-suggestions"></div>
+      `;
+    }
+
+
+    function addVariantEditor(variant = {}) {
+      variantEditorCounter += 1;
+
+      const card =
+        document.createElement('section');
+
+      card.className = 'variant-card';
+      card.dataset.editorId =
+        String(variantEditorCounter);
+
+      const categoryOptions = [
+        '<option value="">Select a category</option>',
+        ...appState.categories.map(category => `
+          <option
+            value="${escapeHtml(category)}"
+            ${
+              variant.mainCategory === category
+                ? 'selected'
+                : ''
+            }
+          >
+            ${escapeHtml(category)}
+          </option>
+        `)
+      ].join('');
+
+      card.innerHTML = `
+        <div class="variant-card-header">
+          <h3 class="variant-card-title">
+            Variant
+          </h3>
+
+          <button
+            class="remove-variant-button"
+            type="button"
+          >
+            Remove
+          </button>
+        </div>
+
+        <div class="variant-form-grid">
+          <div class="form-field">
+            <label class="form-label">
+              Variant Name
+              <span class="required">*</span>
+            </label>
+
+            <input
+              class="text-input variant-name-input"
+              type="text"
+              value="${escapeHtml(variant.name || '')}"
+              placeholder="Example: Pork Sinigang"
+            >
+          </div>
+
+          <div class="form-field">
+            <label class="form-label">
+              Main Category
+              <span class="required">*</span>
+            </label>
+
+            <select class="text-input variant-category-input">
+              ${categoryOptions}
+            </select>
+          </div>
+
+          <div class="form-field full">
+            <label class="form-label">
+              Main Ingredients
+              <span class="required">*</span>
+            </label>
+
+            <div class="tag-editor variant-main-ingredients">
+              ${createTagEditorMarkup()}
+            </div>
+          </div>
+
+          <div class="form-field full">
+            <label class="form-label">
+              Sub Ingredients
+            </label>
+
+            <div class="tag-editor variant-sub-ingredients">
+              ${createTagEditorMarkup()}
+            </div>
+          </div>
+
+          <div class="form-field full">
+            <label class="form-label">
+              Description
+            </label>
+
+            <textarea
+              class="text-area variant-description"
+            >${escapeHtml(variant.description || '')}</textarea>
+          </div>
+
+          <div class="form-field full">
+            <label class="form-label">
+              Recipe Guideline
+            </label>
+
+            <textarea
+              class="text-area large variant-recipe-guideline"
+              placeholder="Add preparation notes, measurements, serving information, or recipe guidance"
+            >${escapeHtml(variant.recipeGuideline || '')}</textarea>
+          </div>
+
+          <div class="form-field full">
+            <label class="form-label">
+              Cooking Instructions
+            </label>
+
+            <textarea
+              class="text-area large variant-cooking-instructions"
+              placeholder="Enter the steps for cooking this variant"
+            >${escapeHtml(variant.cookingInstructions || '')}</textarea>
+          </div>
+        </div>
+      `;
+
+      const mainEditor = new TagEditor(
+        card.querySelector(
+          '.variant-main-ingredients'
+        ),
+        () => appState.ingredientSuggestions
+      );
+
+      const subEditor = new TagEditor(
+        card.querySelector(
+          '.variant-sub-ingredients'
+        ),
+        () => appState.ingredientSuggestions
+      );
+
+      mainEditor.setTags(
+        variant.mainIngredients || []
+      );
+      subEditor.setTags(
+        variant.subIngredients || []
+      );
+
+      const editor = {
+        card,
+        mainEditor,
+        subEditor
+      };
+
+      variantEditors.push(editor);
+
+      card
+        .querySelector(
+          '.remove-variant-button'
+        )
+        .addEventListener(
+          'click',
+          () => removeVariantEditor(editor)
+        );
+
+      document
+        .getElementById('variantList')
+        .appendChild(card);
+
+      refreshVariantEditorTitles();
+    }
+
+
+    function removeVariantEditor(editor) {
+      if (variantEditors.length === 1) {
+        showToast(
+          'A dish must have at least one variant.',
+          true
+        );
+        return;
+      }
+
+      editor.card.remove();
+      variantEditors =
+        variantEditors.filter(
+          item => item !== editor
+        );
+
+      refreshVariantEditorTitles();
+    }
+
+
+    function refreshVariantEditorTitles() {
+      variantEditors.forEach(
+        (editor, index) => {
+          editor.card
+            .querySelector(
+              '.variant-card-title'
+            )
+            .textContent =
+              `Variant ${index + 1}`;
+        }
+      );
+    }
+
+
+    function resetVariantEditors() {
+      variantEditors = [];
+      variantEditorCounter = 0;
+
+      document
+        .getElementById('variantList')
+        .innerHTML = '';
+    }
+
+
+    function getVariantPayloads() {
+      return variantEditors.map(editor => {
+        editor.mainEditor.commitPendingValue();
+        editor.subEditor.commitPendingValue();
+
+        return {
+          name:
+            editor.card
+              .querySelector(
+                '.variant-name-input'
+              )
+              .value
+              .trim(),
+          mainCategory:
+            editor.card
+              .querySelector(
+                '.variant-category-input'
+              )
+              .value,
+          mainIngredients:
+            editor.mainEditor.getTags(),
+          subIngredients:
+            editor.subEditor.getTags(),
+          description:
+            editor.card
+              .querySelector(
+                '.variant-description'
+              )
+              .value
+              .trim(),
+          recipeGuideline:
+            editor.card
+              .querySelector(
+                '.variant-recipe-guideline'
+              )
+              .value
+              .trim(),
+          cookingInstructions:
+            editor.card
+              .querySelector(
+                '.variant-cooking-instructions'
+              )
+              .value
+              .trim()
+        };
+      });
+    }
+
+
     function openDishModal(dish = null) {
       document
         .getElementById(
@@ -2553,68 +2859,15 @@
             ? dish.dishName
             : '';
 
-      document
-        .getElementById(
-          'description'
-        )
-        .value =
-          dish
-            ? dish.description
-            : '';
+      resetVariantEditors();
 
-      document
-        .getElementById(
-          'recipeGuideline'
-        )
-        .value =
-          dish
-            ? dish.recipeGuideline
-            : '';
+      const variants =
+        dish && dish.variants.length
+          ? dish.variants
+          : [{}];
 
-      document
-        .getElementById(
-          'cookingInstructions'
-        )
-        .value =
-          dish
-            ? dish.cookingInstructions
-            : '';
-
-      const selectedCategories =
-        dish
-          ? dish.mainCategories
-          : [];
-
-      document
-        .querySelectorAll(
-          'input[name="mainCategory"]'
-        )
-        .forEach(checkbox => {
-          checkbox.checked =
-            selectedCategories.includes(
-              checkbox.value
-            );
-
-          checkbox
-            .closest(
-              '.category-checkbox-label'
-            )
-            .classList.toggle(
-              'selected',
-              checkbox.checked
-            );
-        });
-
-      mainIngredientEditor.setTags(
-        dish
-          ? dish.mainIngredients
-          : []
-      );
-
-      subIngredientEditor.setTags(
-        dish
-          ? dish.subIngredients
-          : []
+      variants.forEach(variant =>
+        addVariantEditor(variant)
       );
 
       document
@@ -2638,42 +2891,12 @@
         )
         .reset();
 
-      document
-        .querySelectorAll(
-          '.category-checkbox-label'
-        )
-        .forEach(label =>
-          label.classList.remove(
-            'selected'
-          )
-        );
-
-      mainIngredientEditor.setTags([]);
-      subIngredientEditor.setTags([]);
-    }
-
-
-    function getSelectedMainCategories() {
-      return Array
-        .from(
-          document.querySelectorAll(
-            'input[name="mainCategory"]:checked'
-          )
-        )
-        .map(checkbox =>
-          checkbox.value
-        );
+      resetVariantEditors();
     }
 
 
     async function submitDishForm(event) {
       event.preventDefault();
-
-      mainIngredientEditor
-        .commitPendingValue();
-
-      subIngredientEditor
-        .commitPendingValue();
 
       const payload = {
         id:
@@ -2692,38 +2915,7 @@
             .value
             .trim(),
 
-        mainCategories:
-          getSelectedMainCategories(),
-
-        mainIngredients:
-          mainIngredientEditor.getTags(),
-
-        subIngredients:
-          subIngredientEditor.getTags(),
-
-        description:
-          document
-            .getElementById(
-              'description'
-            )
-            .value
-            .trim(),
-
-        recipeGuideline:
-          document
-            .getElementById(
-              'recipeGuideline'
-            )
-            .value
-            .trim(),
-
-        cookingInstructions:
-          document
-            .getElementById(
-              'cookingInstructions'
-            )
-            .value
-            .trim()
+        variants: getVariantPayloads()
       };
 
       if (!payload.dishName) {
@@ -2735,22 +2927,46 @@
         return;
       }
 
-      if (!payload.mainCategories.length) {
+      if (!payload.variants.length) {
         showToast(
-          'Please select at least one main category.',
+          'Please add at least one dish variant.',
           true
         );
 
         return;
       }
 
-      if (!payload.mainIngredients.length) {
-        showToast(
-          'Please add at least one main ingredient.',
-          true
-        );
+      for (
+        let index = 0;
+        index < payload.variants.length;
+        index += 1
+      ) {
+        const variant = payload.variants[index];
+        const number = index + 1;
 
-        return;
+        if (!variant.name) {
+          showToast(
+            `Please enter a name for variant ${number}.`,
+            true
+          );
+          return;
+        }
+
+        if (!variant.mainCategory) {
+          showToast(
+            `Please select a category for ${variant.name}.`,
+            true
+          );
+          return;
+        }
+
+        if (!variant.mainIngredients.length) {
+          showToast(
+            `Please add a main ingredient for ${variant.name}.`,
+            true
+          );
+          return;
+        }
       }
 
       const button =
