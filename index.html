@@ -761,30 +761,42 @@
       line-height: 1.5;
     }
 
-    .variant-section-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
+    .variant-list {
+      display: grid;
       gap: 18px;
     }
 
-    .variant-section-header .field-help {
-      margin: 5px 0 0;
+    .variant-list.single-variant-mode .variant-card {
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+    .variant-list.single-variant-mode
+      .variant-card-header,
+    .variant-list.single-variant-mode
+      .variant-name-field {
+      display: none;
+    }
+
+    .variant-list.single-variant-mode
+      .variant-category-field {
+      grid-column: 1 / -1;
+    }
+
+    .variant-footer-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 16px;
     }
 
     .add-variant-button {
-      flex: 0 0 auto;
-      padding: 10px 14px;
+      padding: 11px 16px;
       border: 0;
       border-radius: 11px;
       background: var(--primary);
       color: white;
       font-weight: 700;
-    }
-
-    .variant-list {
-      display: grid;
-      gap: 18px;
     }
 
     .variant-card {
@@ -808,13 +820,29 @@
       font-size: 18px;
     }
 
+    .variant-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .duplicate-variant-button,
     .remove-variant-button {
       padding: 8px 11px;
-      border: 1px solid #fecaca;
       border-radius: 9px;
+      font-weight: 700;
+    }
+
+    .duplicate-variant-button {
+      border: 1px solid #bbd7c1;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+    }
+
+    .remove-variant-button {
+      border: 1px solid #fecaca;
       background: #fff1f2;
       color: var(--danger);
-      font-weight: 700;
     }
 
     .variant-form-grid {
@@ -1811,19 +1839,12 @@
 
           <div class="form-field full">
 
-            <div class="variant-section-header">
-              <div>
-                <div class="form-label">
-                  Dish Variants
-                  <span class="required">*</span>
-                </div>
+            <div
+              id="variantList"
+              class="variant-list single-variant-mode"
+            ></div>
 
-                <p class="field-help">
-                  Add each version as a complete dish. The shared dish
-                  name will appear only once in the main list.
-                </p>
-              </div>
-
+            <div class="variant-footer-actions">
               <button
                 id="addVariantButton"
                 class="add-variant-button"
@@ -1832,11 +1853,6 @@
                 + Add Variant
               </button>
             </div>
-
-            <div
-              id="variantList"
-              class="variant-list"
-            ></div>
 
           </div>
 
@@ -2015,6 +2031,7 @@
 
     let variantEditorCounter = 0;
     let variantEditors = [];
+    let isSingleVariantMode = true;
     let dishFormInitialSnapshot = '';
     let confirmationResolver = null;
     let isDishSaving = false;
@@ -2052,7 +2069,7 @@
         .getElementById('addVariantButton')
         .addEventListener(
           'click',
-          () => addVariantEditor()
+          handleAddVariant
         );
 
       searchInput.addEventListener(
@@ -3139,7 +3156,6 @@
             class="tag-editor-input"
             type="text"
             autocomplete="off"
-            placeholder="Type an ingredient, then press comma or Enter"
           >
         </div>
         <div class="tag-suggestions"></div>
@@ -3147,7 +3163,10 @@
     }
 
 
-    function addVariantEditor(variant = {}) {
+    function addVariantEditor(
+      variant = {},
+      insertAfterEditor = null
+    ) {
       variantEditorCounter += 1;
 
       const card =
@@ -3179,16 +3198,25 @@
             Variant
           </h3>
 
-          <button
-            class="remove-variant-button"
-            type="button"
-          >
-            Remove
-          </button>
+          <div class="variant-card-actions">
+            <button
+              class="duplicate-variant-button"
+              type="button"
+            >
+              Duplicate
+            </button>
+
+            <button
+              class="remove-variant-button"
+              type="button"
+            >
+              Remove
+            </button>
+          </div>
         </div>
 
         <div class="variant-form-grid">
-          <div class="form-field">
+          <div class="form-field variant-name-field">
             <label class="form-label">
               Variant Name
               <span class="required">*</span>
@@ -3198,11 +3226,10 @@
               class="text-input variant-name-input"
               type="text"
               value="${escapeHtml(variant.name || '')}"
-              placeholder="Example: Pork Sinigang"
             >
           </div>
 
-          <div class="form-field">
+          <div class="form-field variant-category-field">
             <label class="form-label">
               Main Category
               <span class="required">*</span>
@@ -3251,7 +3278,6 @@
 
             <textarea
               class="text-area large variant-recipe-guideline"
-              placeholder="Add preparation notes, measurements, serving information, or recipe guidance"
             >${escapeHtml(variant.recipeGuideline || '')}</textarea>
           </div>
 
@@ -3262,7 +3288,6 @@
 
             <textarea
               class="text-area large variant-cooking-instructions"
-              placeholder="Enter the steps for cooking this variant"
             >${escapeHtml(variant.cookingInstructions || '')}</textarea>
           </div>
         </div>
@@ -3295,7 +3320,27 @@
         subEditor
       };
 
-      variantEditors.push(editor);
+      const insertIndex =
+        insertAfterEditor
+          ? variantEditors.indexOf(
+              insertAfterEditor
+            ) + 1
+          : variantEditors.length;
+
+      variantEditors.splice(
+        insertIndex,
+        0,
+        editor
+      );
+
+      card
+        .querySelector(
+          '.duplicate-variant-button'
+        )
+        .addEventListener(
+          'click',
+          () => duplicateVariantEditor(editor)
+        );
 
       card
         .querySelector(
@@ -3306,20 +3351,104 @@
           () => removeVariantEditor(editor)
         );
 
-      document
-        .getElementById('variantList')
-        .appendChild(card);
+      const variantList =
+        document.getElementById(
+          'variantList'
+        );
+      const nextEditor =
+        variantEditors[insertIndex + 1];
+
+      if (nextEditor) {
+        variantList.insertBefore(
+          card,
+          nextEditor.card
+        );
+      } else {
+        variantList.appendChild(card);
+      }
 
       refreshVariantEditorTitles();
+      return editor;
+    }
+
+
+    function setSingleVariantMode(enabled) {
+      isSingleVariantMode = enabled;
+
+      document
+        .getElementById('variantList')
+        .classList.toggle(
+          'single-variant-mode',
+          enabled
+        );
+
+      if (
+        enabled &&
+        variantEditors.length === 1
+      ) {
+        variantEditors[0].card
+          .querySelector(
+            '.variant-name-input'
+          )
+          .value =
+            document
+              .getElementById('dishName')
+              .value
+              .trim();
+      }
+    }
+
+
+    function handleAddVariant() {
+      if (isSingleVariantMode) {
+        setSingleVariantMode(false);
+
+        variantEditors[0].card
+          .querySelector(
+            '.variant-name-input'
+          )
+          .value =
+            document
+              .getElementById('dishName')
+              .value
+              .trim();
+      }
+
+      const newEditor =
+        addVariantEditor();
+
+      newEditor.card.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+
+
+    function duplicateVariantEditor(editor) {
+      if (isSingleVariantMode) {
+        setSingleVariantMode(false);
+      }
+
+      const duplicate =
+        addVariantEditor(
+          getVariantEditorPayload(
+            editor,
+            true
+          ),
+          editor
+        );
+
+      duplicate.card.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+
+      showToast('Variant duplicated.');
     }
 
 
     async function removeVariantEditor(editor) {
       if (variantEditors.length === 1) {
-        showToast(
-          'A dish must have at least one variant.',
-          true
-        );
         return;
       }
 
@@ -3342,6 +3471,10 @@
           item => item !== editor
         );
 
+      if (variantEditors.length === 1) {
+        setSingleVariantMode(true);
+      }
+
       refreshVariantEditorTitles();
     }
 
@@ -3363,59 +3496,88 @@
     function resetVariantEditors() {
       variantEditors = [];
       variantEditorCounter = 0;
+      isSingleVariantMode = true;
 
-      document
-        .getElementById('variantList')
-        .innerHTML = '';
+      const variantList =
+        document.getElementById(
+          'variantList'
+        );
+
+      variantList.innerHTML = '';
+      variantList.classList.add(
+        'single-variant-mode'
+      );
+    }
+
+
+    function getVariantEditorPayload(
+      editor,
+      commitPending = false
+    ) {
+      if (commitPending) {
+        editor.mainEditor.commitPendingValue();
+        editor.subEditor.commitPendingValue();
+      }
+
+      const isOnlyVariant =
+        isSingleVariantMode &&
+        variantEditors.length === 1;
+
+      return {
+        name:
+          isOnlyVariant
+            ? document
+                .getElementById('dishName')
+                .value
+                .trim()
+            : editor.card
+                .querySelector(
+                  '.variant-name-input'
+                )
+                .value
+                .trim(),
+        mainCategory:
+          editor.card
+            .querySelector(
+              '.variant-category-input'
+            )
+            .value,
+        mainIngredients:
+          editor.mainEditor.getTags(),
+        subIngredients:
+          editor.subEditor.getTags(),
+        description:
+          editor.card
+            .querySelector(
+              '.variant-description'
+            )
+            .value
+            .trim(),
+        recipeGuideline:
+          editor.card
+            .querySelector(
+              '.variant-recipe-guideline'
+            )
+            .value
+            .trim(),
+        cookingInstructions:
+          editor.card
+            .querySelector(
+              '.variant-cooking-instructions'
+            )
+            .value
+            .trim()
+      };
     }
 
 
     function getVariantPayloads() {
-      return variantEditors.map(editor => {
-        editor.mainEditor.commitPendingValue();
-        editor.subEditor.commitPendingValue();
-
-        return {
-          name:
-            editor.card
-              .querySelector(
-                '.variant-name-input'
-              )
-              .value
-              .trim(),
-          mainCategory:
-            editor.card
-              .querySelector(
-                '.variant-category-input'
-              )
-              .value,
-          mainIngredients:
-            editor.mainEditor.getTags(),
-          subIngredients:
-            editor.subEditor.getTags(),
-          description:
-            editor.card
-              .querySelector(
-                '.variant-description'
-              )
-              .value
-              .trim(),
-          recipeGuideline:
-            editor.card
-              .querySelector(
-                '.variant-recipe-guideline'
-              )
-              .value
-              .trim(),
-          cookingInstructions:
-            editor.card
-              .querySelector(
-                '.variant-cooking-instructions'
-              )
-              .value
-              .trim()
-        };
-      });
+      return variantEditors.map(editor =>
+        getVariantEditorPayload(
+          editor,
+          true
+        )
+      );
     }
 
 
@@ -3456,6 +3618,10 @@
 
       variants.forEach(variant =>
         addVariantEditor(variant)
+      );
+
+      setSingleVariantMode(
+        variants.length === 1
       );
 
       document
@@ -3530,6 +3696,7 @@
           document
             .getElementById('dishName')
             .value,
+        isSingleVariantMode,
         variants
       });
     }
@@ -3813,9 +3980,12 @@
           event => {
             if (
               event.key === ',' ||
-              event.key === 'Enter'
+              event.key === 'Enter' ||
+              event.key === 'Tab'
             ) {
-              event.preventDefault();
+              if (event.key !== 'Tab') {
+                event.preventDefault();
+              }
 
               this.commitPendingValue();
             }
@@ -3829,6 +3999,11 @@
               this.renderTags();
             }
           }
+        );
+
+        this.input.addEventListener(
+          'blur',
+          () => this.commitPendingValue()
         );
 
         this.input.addEventListener(
