@@ -1039,6 +1039,107 @@
       color: white;
     }
 
+    .confirmation-backdrop {
+      z-index: 220;
+    }
+
+    .confirmation-dialog {
+      width: min(440px, 100%);
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.42);
+      border-radius: 20px;
+      background: white;
+      box-shadow:
+        0 26px 70px
+        rgba(0, 0, 0, 0.32);
+      animation: confirmation-pop 0.18s ease-out;
+    }
+
+    @keyframes confirmation-pop {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.97);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .confirmation-body {
+      padding: 25px 24px 20px;
+      text-align: center;
+    }
+
+    .confirmation-icon {
+      display: grid;
+      place-items: center;
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 15px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      color: var(--primary-dark);
+      font-size: 25px;
+      font-weight: 800;
+    }
+
+    .confirmation-dialog.danger .confirmation-icon {
+      background: #fff1f2;
+      color: var(--danger);
+    }
+
+    .confirmation-title {
+      margin: 0 0 9px;
+      color: var(--text);
+      font-size: 22px;
+    }
+
+    .confirmation-message {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-line;
+    }
+
+    .confirmation-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 16px 20px 20px;
+      border-top: 1px solid var(--border);
+      background: #fffdf8;
+    }
+
+    .confirmation-actions button {
+      min-width: 105px;
+      padding: 11px 17px;
+      border-radius: 11px;
+      font-weight: 700;
+    }
+
+    .confirmation-cancel {
+      border: 1px solid var(--border);
+      background: white;
+      color: var(--text);
+    }
+
+    .confirmation-confirm {
+      border: 0;
+      background: var(--primary);
+      color: white;
+    }
+
+    .confirmation-confirm.danger {
+      background: var(--danger);
+    }
+
+    .confirmation-cancel[hidden] {
+      display: none;
+    }
+
     .details-content {
       padding: 22px;
     }
@@ -1667,7 +1768,7 @@
         <button
           class="close-modal-button"
           type="button"
-          onclick="closeDishModal()"
+          onclick="requestCloseDishModal()"
         >
           ×
         </button>
@@ -1747,7 +1848,7 @@
           <button
             class="cancel-button"
             type="button"
-            onclick="closeDishModal()"
+            onclick="requestCloseDishModal()"
           >
             Cancel
           </button>
@@ -1825,6 +1926,61 @@
 
 
   <div
+    id="confirmationModalBackdrop"
+    class="modal-backdrop confirmation-backdrop"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="confirmationTitle"
+    aria-describedby="confirmationMessage"
+  >
+    <div
+      id="confirmationDialog"
+      class="confirmation-dialog"
+    >
+      <div class="confirmation-body">
+        <div
+          id="confirmationIcon"
+          class="confirmation-icon"
+          aria-hidden="true"
+        >
+          ✓
+        </div>
+
+        <h2
+          id="confirmationTitle"
+          class="confirmation-title"
+        >
+          Please confirm
+        </h2>
+
+        <p
+          id="confirmationMessage"
+          class="confirmation-message"
+        ></p>
+      </div>
+
+      <div class="confirmation-actions">
+        <button
+          id="confirmationCancelButton"
+          class="confirmation-cancel"
+          type="button"
+        >
+          Cancel
+        </button>
+
+        <button
+          id="confirmationConfirmButton"
+          class="confirmation-confirm"
+          type="button"
+        >
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <div
     id="toast"
     class="toast"
   ></div>
@@ -1859,6 +2015,9 @@
 
     let variantEditorCounter = 0;
     let variantEditors = [];
+    let dishFormInitialSnapshot = '';
+    let confirmationResolver = null;
+    let isDishSaving = false;
 
 
     document.addEventListener(
@@ -1947,10 +2106,11 @@
             const dish =
               appState.selectedDish;
 
-            closeDetailsModal();
-
             if (dish) {
-              openDishModal(dish);
+              confirmOpenDishEditor(
+                dish,
+                true
+              );
             }
           }
         );
@@ -1958,19 +2118,84 @@
 
       document
         .getElementById(
-          'dishModalBackdrop'
+          'confirmationCancelButton'
         )
         .addEventListener(
           'click',
-          event => {
-            if (
-              event.target.id ===
-              'dishModalBackdrop'
-            ) {
-              closeDishModal();
-            }
-          }
+          () => resolveConfirmation(false)
         );
+
+      document
+        .getElementById(
+          'confirmationConfirmButton'
+        )
+        .addEventListener(
+          'click',
+          () => resolveConfirmation(true)
+        );
+
+      document.addEventListener(
+        'keydown',
+        event => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+
+          const confirmationBackdrop =
+            document.getElementById(
+              'confirmationModalBackdrop'
+            );
+
+          if (
+            confirmationBackdrop
+              .classList
+              .contains('open')
+          ) {
+            resolveConfirmation(false);
+            return;
+          }
+
+          const dishBackdrop =
+            document.getElementById(
+              'dishModalBackdrop'
+            );
+
+          if (
+            dishBackdrop
+              .classList
+              .contains('open')
+          ) {
+            requestCloseDishModal();
+            return;
+          }
+
+          const detailsBackdrop =
+            document.getElementById(
+              'detailsModalBackdrop'
+            );
+
+          if (
+            detailsBackdrop
+              .classList
+              .contains('open')
+          ) {
+            closeDetailsModal();
+          }
+        }
+      );
+
+      window.addEventListener(
+        'beforeunload',
+        event => {
+          if (
+            isDishModalOpen() &&
+            hasUnsavedDishChanges()
+          ) {
+            event.preventDefault();
+            event.returnValue = '';
+          }
+        }
+      );
 
 
       document
@@ -2427,7 +2652,7 @@
       if (editButton) {
         editButton.addEventListener(
           'click',
-          () => openDishModal(dish)
+          () => confirmOpenDishEditor(dish)
         );
       }
 
@@ -3089,12 +3314,25 @@
     }
 
 
-    function removeVariantEditor(editor) {
+    async function removeVariantEditor(editor) {
       if (variantEditors.length === 1) {
         showToast(
           'A dish must have at least one variant.',
           true
         );
+        return;
+      }
+
+      const confirmed =
+        await showConfirmation({
+          title: 'Remove this variant?',
+          message:
+            'The information entered for this variant will be discarded.',
+          confirmText: 'Remove Variant',
+          tone: 'danger'
+        });
+
+      if (!confirmed) {
         return;
       }
 
@@ -3225,6 +3463,133 @@
           'dishModalBackdrop'
         )
         .classList.add('open');
+
+      dishFormInitialSnapshot =
+        getDishFormSnapshot();
+    }
+
+
+    function isDishModalOpen() {
+      return document
+        .getElementById(
+          'dishModalBackdrop'
+        )
+        .classList.contains('open');
+    }
+
+
+    function getDishFormSnapshot() {
+      const variants =
+        variantEditors.map(editor => ({
+          name:
+            editor.card
+              .querySelector(
+                '.variant-name-input'
+              )
+              .value,
+          mainCategory:
+            editor.card
+              .querySelector(
+                '.variant-category-input'
+              )
+              .value,
+          mainIngredients:
+            editor.mainEditor.getTags(),
+          mainIngredientPending:
+            editor.mainEditor.input.value,
+          subIngredients:
+            editor.subEditor.getTags(),
+          subIngredientPending:
+            editor.subEditor.input.value,
+          description:
+            editor.card
+              .querySelector(
+                '.variant-description'
+              )
+              .value,
+          recipeGuideline:
+            editor.card
+              .querySelector(
+                '.variant-recipe-guideline'
+              )
+              .value,
+          cookingInstructions:
+            editor.card
+              .querySelector(
+                '.variant-cooking-instructions'
+              )
+              .value
+        }));
+
+      return JSON.stringify({
+        id:
+          document
+            .getElementById('dishId')
+            .value,
+        dishName:
+          document
+            .getElementById('dishName')
+            .value,
+        variants
+      });
+    }
+
+
+    function hasUnsavedDishChanges() {
+      return (
+        isDishModalOpen() &&
+        getDishFormSnapshot() !==
+          dishFormInitialSnapshot
+      );
+    }
+
+
+    async function requestCloseDishModal() {
+      if (isDishSaving) {
+        return;
+      }
+
+      if (!hasUnsavedDishChanges()) {
+        closeDishModal();
+        return;
+      }
+
+      const confirmed =
+        await showConfirmation({
+          title: 'Discard unsaved changes?',
+          message:
+            'Your updates have not been saved. If you leave now, they will be lost.',
+          confirmText: 'Discard Changes',
+          tone: 'danger'
+        });
+
+      if (confirmed) {
+        closeDishModal();
+      }
+    }
+
+
+    async function confirmOpenDishEditor(
+      dish,
+      closeDetails = false
+    ) {
+      const confirmed =
+        await showConfirmation({
+          title: 'Edit this dish?',
+          message:
+            `You are about to edit "${dish.dishName}". Your changes will only be kept after you save.`,
+          confirmText: 'Edit Dish'
+        });
+
+      if (!confirmed) {
+        return;
+      }
+
+      if (closeDetails) {
+        closeDetailsModal();
+      }
+
+      openDishModal(dish);
     }
 
 
@@ -3242,6 +3607,8 @@
         .reset();
 
       resetVariantEditors();
+      dishFormInitialSnapshot = '';
+      isDishSaving = false;
     }
 
 
@@ -3319,6 +3686,27 @@
         }
       }
 
+      const isEditing = Boolean(payload.id);
+      const confirmed =
+        await showConfirmation({
+          title:
+            isEditing
+              ? 'Save your updates?'
+              : 'Save this new dish?',
+          message:
+            isEditing
+              ? 'This will replace the saved dish information with the updates in this form.'
+              : 'This dish and all of its variants will be added to Ulam Finder.',
+          confirmText:
+            isEditing
+              ? 'Save Updates'
+              : 'Save Dish'
+        });
+
+      if (!confirmed) {
+        return;
+      }
+
       const button =
         document.getElementById(
           'saveDishButton'
@@ -3326,6 +3714,7 @@
 
       button.disabled = true;
       button.textContent = 'Saving...';
+      isDishSaving = true;
 
       try {
         const response =
@@ -3337,14 +3726,22 @@
           button.textContent =
             'Save Dish';
 
-          showToast(response.message);
-
           closeDishModal();
           await loadAppData();
+
+          await showConfirmation({
+            title: 'Dish saved',
+            message:
+              response.message ||
+              'All dish information was saved successfully.',
+            confirmText: 'Done',
+            cancelText: ''
+          });
       } catch (error) {
           button.disabled = false;
           button.textContent =
             'Save Dish';
+          isDishSaving = false;
 
           handleServerError(error);
       }
@@ -3353,9 +3750,13 @@
 
     async function confirmDeleteDish(dish) {
       const confirmed =
-        window.confirm(
-          `Delete "${dish.dishName}"?`
-        );
+        await showConfirmation({
+          title: 'Delete this dish?',
+          message:
+            `"${dish.dishName}" and all of its variants will be permanently deleted.`,
+          confirmText: 'Delete Dish',
+          tone: 'danger'
+        });
 
       if (!confirmed) {
         return;
@@ -3663,6 +4064,96 @@
 
         this.suggestionBox.innerHTML = '';
       }
+    }
+
+
+    function showConfirmation({
+      title,
+      message,
+      confirmText = 'Confirm',
+      cancelText = 'Cancel',
+      tone = 'primary'
+    }) {
+      if (confirmationResolver) {
+        confirmationResolver(false);
+      }
+
+      const backdrop =
+        document.getElementById(
+          'confirmationModalBackdrop'
+        );
+      const dialog =
+        document.getElementById(
+          'confirmationDialog'
+        );
+      const titleElement =
+        document.getElementById(
+          'confirmationTitle'
+        );
+      const messageElement =
+        document.getElementById(
+          'confirmationMessage'
+        );
+      const iconElement =
+        document.getElementById(
+          'confirmationIcon'
+        );
+      const cancelButton =
+        document.getElementById(
+          'confirmationCancelButton'
+        );
+      const confirmButton =
+        document.getElementById(
+          'confirmationConfirmButton'
+        );
+
+      titleElement.textContent = title;
+      messageElement.textContent = message;
+      confirmButton.textContent = confirmText;
+      cancelButton.textContent =
+        cancelText || 'Cancel';
+      cancelButton.hidden = !cancelText;
+
+      const isDanger = tone === 'danger';
+      dialog.classList.toggle(
+        'danger',
+        isDanger
+      );
+      confirmButton.classList.toggle(
+        'danger',
+        isDanger
+      );
+      iconElement.textContent =
+        isDanger ? '!' : '✓';
+
+      backdrop.classList.add('open');
+
+      window.setTimeout(
+        () => confirmButton.focus(),
+        0
+      );
+
+      return new Promise(resolve => {
+        confirmationResolver = resolve;
+      });
+    }
+
+
+    function resolveConfirmation(result) {
+      if (!confirmationResolver) {
+        return;
+      }
+
+      const resolve = confirmationResolver;
+      confirmationResolver = null;
+
+      document
+        .getElementById(
+          'confirmationModalBackdrop'
+        )
+        .classList.remove('open');
+
+      resolve(result);
     }
 
 
